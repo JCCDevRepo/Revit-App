@@ -1,0 +1,90 @@
+﻿<Window x:Class="VDC_App.Create3DViewsUI"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDC_App"
+             mc:Ignorable="d" 
+             Height="auto" Width="300" ResizeMode="NoResize" SizeToContent="Height" Title="Create 3D Views" >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+
+        <CheckBox 
+            Grid.Row="1" 
+            Margin="70,20" 
+            Name="CbGc" 
+            Content="Create 3D for GC"
+            Checked="CbGc_Checked">
+
+        </CheckBox>
+
+        <CheckBox 
+            Grid.Row="2" 
+            Margin="70,20" 
+            Name="CbJcc"
+            Content="Create 3D for JCC"
+            Checked="CbJcc_Checked">
+
+        </CheckBox>
+
+        <CheckBox 
+            Grid.Row="3" 
+            Margin="70,20" 
+            Name="CbIso"
+            Content="Create 3D for ISO"
+            Checked="CbIso_Checked">
+
+        </CheckBox>
+
+        <CheckBox 
+            Grid.Row="4" 
+            Margin="70,20" 
+            Name="CbA3d"
+            Content="Create 3D for A3D"
+            Checked="CbA3d_Checked">
+
+        </CheckBox>
+
+        <Label 
+            Grid.Row="5"
+            Margin="27,10,20,0"
+                       
+            Content="Create Custom View Name">
+
+
+
+        </Label>
+
+        <TextBox 
+            Grid.Row="6"
+            Margin="30,0,30,0"
+            Name="TboxInput">
+        </TextBox>
+
+        <Button
+            Grid.Row="7"
+            Margin="0,20"
+            Width="70"
+            Height="30"
+            Content="Create"
+            Click="Button_ClickCreate"
+            IsCancel="True">
+
+        </Button>
+
+
+
+
+    </Grid>
+</Window>
