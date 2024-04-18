@@ -116,7 +116,7 @@ namespace VDC_App
 
 
 
-                            //toGrid.SetCurveInView(DatumExtentType.ViewSpecific, iterationView, arc);
+                            toGrid.SetCurveInView(DatumExtentType.ViewSpecific, iterationView, arc);
 
                         }
                     }
