@@ -27,7 +27,7 @@ namespace VDC_App
 
             using (Transaction t = new Transaction(doc))
             {
-                t.Start("Unpinned Viewports");
+                t.Start("Pin Viewports");
                 try
                 {
                     foreach (var e in viewports)

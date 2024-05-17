@@ -24,13 +24,18 @@ namespace VDC_App
 
 
 
+            //var viewPlanCollector = new FilteredElementCollector(doc)
+            //    .OfClass(typeof(ViewPlan))
+            //    //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
+            //    //.Where(e => e.Name.Contains("SHEET"));
+            //    .Where(e => e.Name.ToLower().Contains("test"));
+
+
             var viewPlanCollector = new FilteredElementCollector(doc)
                 .OfClass(typeof(ViewPlan))
                 //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
                 //.Where(e => e.Name.Contains("SHEET"));
-                .Where(e => e.Name.ToLower().Contains("test"));
-
-
+                .Where(e => e.Name.ToLower().Contains("grid extents - 02"));
 
 
             var listViewIds = new List<ElementId>();
@@ -58,7 +63,6 @@ namespace VDC_App
 
 
 
-
                 foreach (var id in listViewIds)
                 {
                     var iterationView = doc.GetElement(id) as View;
@@ -68,10 +72,11 @@ namespace VDC_App
 
                     foreach(var e in gridCurrentView)
                     {
+                        
                         var curveInView = (e as Grid).GetCurvesInView(DatumExtentType.ViewSpecific, iterationView);
                         var toGrid = e as Grid;
 
-
+                        if (toGrid.IsCurved == false)
                         //foreach (var curve in curveInView)
                         //{
                         //    TaskDialog.Show("sdfs", $"0:{curve.GetEndPoint(0)}\n1:{curve.GetEndPoint(1)}");
@@ -82,41 +87,55 @@ namespace VDC_App
 
                         foreach (var c in curveInView)
                         {
+
+
+                            
                             var viewArc = c as Arc;
 
+                            var curvePropterty = new List<CurveProperties>()
+                            {
+                                new CurveProperties(){Name = c as Grid.Name, Center = viewArc.Center, StartAngle = viewArc.GetEndParameter(0), EndAngle = viewArc.GetEndParameter(1), DirectionX = viewArc.XDirection, DirectionY = viewArc.YDirection}
+                            };
 
-                            var radius = viewArc.Radius;
-
-                            //var startAngle = 1.27985002500652;
-                            //var endAngle = 1.33833141499587;
-                            var startAngle = viewArc.GetEndParameter(0);
-                            var endAngle = viewArc.GetEndParameter(1);
-
-                            var center = new XYZ(viewArc.Center.X, viewArc.Center.Y, viewArc.Center.Z);
-                            //var center = new XYZ(487948.00, -1118.942, 0.0);
-                            //var xAxis = new XYZ(0.9917, 0.1281, 0.0);
-                            //var yAxis = new XYZ(0.1281, 0.9917, 0.0);
-                            //var xAxis = new XYZ(1.0, 0.0, 0.0);
-                            //var yAxis = new XYZ(0.0, 1.0, 0.0);
-
-                            // X and Y directions of the arc (use snooping tool to see)
-                            var xAxis = new XYZ(viewArc.XDirection.X, viewArc.XDirection.Y, viewArc.XDirection.Z);
-                            var yAxis = new XYZ(viewArc.YDirection.X, viewArc.YDirection.Y, viewArc.YDirection.Z);
-
-                            TaskDialog.Show("asda", $"Radius:{viewArc.Radius}\ncenter:{viewArc.Center}\nXd:{viewArc.XDirection.Normalize()}\nYd:{viewArc.YDirection.Normalize()}\nStartAngle:{startAngle}\nEndAngle:{endAngle}");
+                            foreach(var v in curvePropterty)
+                            {
+                                TaskDialog.Show("fjkdsjf", $"{v.Name}\n{v.Center}\n{v.StartAngle}\n{v.EndAngle}\n{v.DirectionX}\n{v.DirectionY}");
+                            }
 
 
 
+                            //var radius = viewArc.Radius;
+
+                            ////var startAngle = 1.27985002500652;
+                            ////var endAngle = 1.33833141499587;
+                            //var startAngle = viewArc.GetEndParameter(0);
+                            //var endAngle = viewArc.GetEndParameter(1);
+
+                            //var center = new XYZ(viewArc.Center.X, viewArc.Center.Y, viewArc.Center.Z);
+                            ////var center = new XYZ(487948.00, -1118.942, 0.0);
+                            ////var xAxis = new XYZ(0.9917, 0.1281, 0.0);
+                            ////var yAxis = new XYZ(0.1281, 0.9917, 0.0);
+                            ////var xAxis = new XYZ(1.0, 0.0, 0.0);
+                            ////var yAxis = new XYZ(0.0, 1.0, 0.0);
+
+                            //// X and Y directions of the arc (use snooping tool to see)
+                            //var xAxis = new XYZ(viewArc.XDirection.X, viewArc.XDirection.Y, viewArc.XDirection.Z);
+                            //var yAxis = new XYZ(viewArc.YDirection.X, viewArc.YDirection.Y, viewArc.YDirection.Z);
+
+                            //TaskDialog.Show("asda", $"Radius:{viewArc.Radius}\ncenter:{viewArc.Center}\nXd:{viewArc.XDirection.Normalize()}\nYd:{viewArc.YDirection.Normalize()}\nStartAngle:{startAngle}\nEndAngle:{endAngle}");
 
 
-                            // create a test line to see if params work
-                            var arc = Arc.Create(center, radius, startAngle, endAngle, xAxis, yAxis);
-
-                            //doc.Create.NewDetailCurve(doc.ActiveView, arc);
 
 
 
-                            //toGrid.SetCurveInView(DatumExtentType.ViewSpecific, iterationView, arc);
+                            //// create a test line to see if params work
+                            //var arc = Arc.Create(center, radius, startAngle, endAngle, xAxis, yAxis);
+
+                            ////doc.Create.NewDetailCurve(doc.ActiveView, arc);
+
+
+
+                            ////toGrid.SetCurveInView(DatumExtentType.ViewSpecific, iterationView, arc);
 
                         }
                     }
@@ -139,8 +158,14 @@ namespace VDC_App
     }
 }
 
-public class Gridlines
+public class CurveProperties
 {
     public string Name { get; set; }
+    public double Radius { get; set; }
+    public double StartAngle { get; set; }
+    public double EndAngle { get; set; }
+    public XYZ Center { get; set; }
+    public XYZ DirectionX { get; set; }
+    public XYZ DirectionY { get; set; }
 
 }
