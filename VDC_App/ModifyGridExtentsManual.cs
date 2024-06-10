@@ -23,38 +23,35 @@ namespace VDC_App
 
 
 
-
             //var viewPlanCollector = new FilteredElementCollector(doc)
             //    .OfClass(typeof(ViewPlan))
             //    //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
             //    //.Where(e => e.Name.Contains("SHEET"));
-            //    .Where(e => e.Name.ToLower().Contains("test"));
+            //    .Where(e => e.Name.ToLower().Contains("grid extents - 02"));
 
 
-            var viewPlanCollector = new FilteredElementCollector(doc)
-                .OfClass(typeof(ViewPlan))
-                //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
-                //.Where(e => e.Name.Contains("SHEET"));
-                .Where(e => e.Name.ToLower().Contains("grid extents - 02"));
+            //var listViewIds = new List<ElementId>();
+            //foreach (var e in viewPlanCollector)
+            //{
+            //    listViewIds.Add(e.Id);
+
+            //}
 
 
-            var listViewIds = new List<ElementId>();
-            foreach (var e in viewPlanCollector)
-            {
-                //var viewPlans = e as View;
-
-                listViewIds.Add(e.Id);
-
-                //if (viewPlans.Name.Contains("Test")/* & !viewPlans.Name.Contains("- 0")*/)
-                //{
-                //    listViewIds.Add((e as View).Id);
-
-                //}
-            }
             //var SimpleForm = new SimpleForm(list);
             //SimpleForm.Show();
 
-            
+            // use ViewsElementId class to return the list of filteredelementcollector of IDs
+            var sourceViewId = new ViewsElementId(doc, "grid extents area 02").ElementList();
+
+            var getAreaTwoPlanIds = new ViewsElementId(doc, "- 02 test").ElementList();
+
+            //var SimpleForm = new SimpleForm(getAreaTwoPlanIds);
+            //SimpleForm.Show();
+
+
+
+
 
             using (Transaction t = new Transaction(doc))
             {
@@ -63,7 +60,7 @@ namespace VDC_App
 
 
 
-                foreach (var id in listViewIds)
+                foreach (var id in sourceViewId)
                 {
                     var iterationView = doc.GetElement(id) as View;
                     var gridCurrentView = new FilteredElementCollector(doc, id)
@@ -76,7 +73,7 @@ namespace VDC_App
                         var curveInView = (e as Grid).GetCurvesInView(DatumExtentType.ViewSpecific, iterationView);
                         var toGrid = e as Grid;
 
-                        if (toGrid.IsCurved == false)
+                        //if (toGrid.IsCurved == false)
                         //foreach (var curve in curveInView)
                         //{
                         //    TaskDialog.Show("sdfs", $"0:{curve.GetEndPoint(0)}\n1:{curve.GetEndPoint(1)}");
@@ -92,15 +89,67 @@ namespace VDC_App
                             
                             var viewArc = c as Arc;
 
-                            var curvePropterty = new List<CurveProperties>()
+                            //var curveProp = new List<CurveProperties>()
+                            //{
+                            //    new CurveProperties(){Name = toGrid.Name, Center = viewArc.Center, StartAngle = viewArc.GetEndParameter(0), EndAngle = viewArc.GetEndParameter(1), DirectionX = viewArc.XDirection, DirectionY = viewArc.YDirection}
+                            //};
+
+                            // create curve object based on Area 2 reference views
+                            var curveProp2 = new CurveProperties()
                             {
-                                new CurveProperties(){Name = c as Grid.Name, Center = viewArc.Center, StartAngle = viewArc.GetEndParameter(0), EndAngle = viewArc.GetEndParameter(1), DirectionX = viewArc.XDirection, DirectionY = viewArc.YDirection}
+                                Name = toGrid.Name, 
+                                Center = viewArc.Center,
+                                Radius = viewArc.Radius,
+                                StartAngle = viewArc.GetEndParameter(0),
+                                EndAngle = viewArc.GetEndParameter(1),
+                                DirectionX = viewArc.XDirection,
+                                DirectionY = viewArc.YDirection
                             };
 
-                            foreach(var v in curvePropterty)
+                            foreach (var a2 in getAreaTwoPlanIds)
                             {
-                                TaskDialog.Show("fjkdsjf", $"{v.Name}\n{v.Center}\n{v.StartAngle}\n{v.EndAngle}\n{v.DirectionX}\n{v.DirectionY}");
+                                var iterationViewA2 = doc.GetElement(a2) as View;
+                                var gridCurrentViewA2 = new FilteredElementCollector(doc, a2)
+                                .OfClass(typeof(Grid))
+                                .ToElements();
+
+
+
+                                // views ids for area 2 views
+                                foreach(var g in gridCurrentViewA2)
+                                {
+                                    var gridInA2 = g as Grid;
+
+                                    //TaskDialog.Show("asdas", gridInA2.Id.ToString());
+                                    //TaskDialog.Show("asdas", toGrid.Id.ToString());
+                                    if (gridInA2.Id == toGrid.Id)
+                                    {
+
+                                        var arc = Arc.Create(curveProp2.Center, curveProp2.Radius, curveProp2.StartAngle, curveProp2.EndAngle, curveProp2.DirectionX, curveProp2.DirectionY);
+
+                                        //TaskDialog.Show("sdfsd", $"{arc.Center}\n{arc.Radius}\n{arc.XDirection}\n{arc.YDirection}");
+                                        //TaskDialog.Show("sadas", arc.ToString());
+
+                                        //doc.Create.NewDetailCurve(doc.ActiveView, arc);
+
+
+                                        gridInA2.SetCurveInView(DatumExtentType.ViewSpecific, iterationViewA2, arc);
+                                    }
+                                }
+
+
+
+
+
+
                             }
+                            ////toGrid.SetCurveInView(DatumExtentType.ViewSpecific, iterationView, arc);
+
+
+                            //foreach(var v in curveProp)
+                            //{
+                            //    TaskDialog.Show("fjkdsjf", $"{v.Name}\n{v.Center}\n{v.StartAngle}\n{v.EndAngle}\n{v.DirectionX}\n{v.DirectionY}");
+                            //}
 
 
 
@@ -143,8 +192,9 @@ namespace VDC_App
 
 
 
-
                 }
+
+                
 
                 t.Commit();
 
@@ -155,6 +205,41 @@ namespace VDC_App
         }
 
 
+    }
+}
+
+public class ViewsElementId
+{
+
+    public Document Doc { get; set; }
+    public string ViewName { get; set; }
+
+    public ViewsElementId(Document doc, string viewName)
+    {
+        Doc = doc;
+        ViewName = viewName;
+
+        
+    }
+
+    public List<ElementId> ElementList()
+    {
+        var viewPlanCollector = new FilteredElementCollector(Doc)
+        .OfClass(typeof(ViewPlan))
+        //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
+        //.Where(e => e.Name.Contains("SHEET"));
+        .Where(e => e.Name.ToLower().Contains(ViewName));
+
+
+        var listViewIds = new List<ElementId>();
+        foreach (var e in viewPlanCollector)
+        {
+
+            listViewIds.Add(e.Id);
+
+        }
+
+        return listViewIds;
     }
 }
 
