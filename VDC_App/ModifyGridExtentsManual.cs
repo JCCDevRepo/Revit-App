@@ -127,7 +127,7 @@ namespace VDC_App
 
                                         var arc = Arc.Create(curveProp2.Center, curveProp2.Radius, curveProp2.StartAngle, curveProp2.EndAngle, curveProp2.DirectionX, curveProp2.DirectionY);
 
-                                        //TaskDialog.Show("sdfsd", $"{arc.Center}\n{arc.Radius}\n{arc.XDirection}\n{arc.YDirection}");
+                                        //TaskDialog.Show("sdfsd", $"{arc.Center}\n{arc.Radius}\n{curveProp2.StartAngle}\n{curveProp2.EndAngle}\n{arc.XDirection}\n{arc.YDirection}");
                                         //TaskDialog.Show("sadas", arc.ToString());
 
                                         //doc.Create.NewDetailCurve(doc.ActiveView, arc);
