@@ -22,36 +22,57 @@ namespace VDC_App
             Document doc = uiapp.ActiveUIDocument.Document;
 
 
-
-            //var viewPlanCollector = new FilteredElementCollector(doc)
-            //    .OfClass(typeof(ViewPlan))
-            //    //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
-            //    //.Where(e => e.Name.Contains("SHEET"));
-            //    .Where(e => e.Name.ToLower().Contains("grid extents - 02"));
-
-
-            //var listViewIds = new List<ElementId>();
-            //foreach (var e in viewPlanCollector)
-            //{
-            //    listViewIds.Add(e.Id);
-
-            //}
-
-
             //var SimpleForm = new SimpleForm(list);
             //SimpleForm.Show();
 
-            // use ViewsElementId class to return the list of filteredelementcollector of IDs
-            var sourceViewId = new ViewsElementId(doc, "grid extents area 02").ElementList();
 
-            var getAreaTwoPlanIds = new ViewsElementId(doc, "- 02 test").ElementList();
+            var getCurvedGridViews = new ViewsElementId(doc, "curvegridarea").CheckSourceForCurve();
 
-            //var SimpleForm = new SimpleForm(getAreaTwoPlanIds);
-            //SimpleForm.Show();
 
-            var test = new ModifyArc(sourceViewId, getAreaTwoPlanIds, doc);
 
-            test.MoveGrid();
+
+            for (int i = 0; i < getCurvedGridViews.Count; i++)
+            {
+                switch (getCurvedGridViews[i])
+                {
+                    case "curvegridarea1":
+
+                        break;
+
+                    case "curvegridarea2":
+                        var sourceViewId = new ViewsElementId(doc, "curvegridarea2").ElementList();
+
+                        var areaPlanIds = new ViewsElementId(doc, "- 2").ElementList();
+                        new ModifyArc(sourceViewId, areaPlanIds, doc).MoveGrid();
+
+                        break;
+                    case "curvegridarea3":
+                        break;
+                    case "curvegridarea4":
+                        break;
+                    case "curvegridarea5":
+                        break;
+                    case "curvegridarea6":
+                        break;
+                    case "curvegridarea7":
+                        break;
+                    case "curvegridarea8":
+                        break;
+                    case "curvegridarea9":
+                        break;
+                    case "curvegridarea10":
+                        break;
+                    case "curvegridarea11":
+                        break;
+                    case "curvegridarea12":
+                        break;
+                        
+                    default:
+                        TaskDialog.Show("Error", "No Curved Grids found or missing CurveGridArea Views");
+                        break;
+                }
+            }
+
 
 
             /* this was the working code before turning it into a class
@@ -197,12 +218,46 @@ public class ViewsElementId
         var listViewIds = new List<ElementId>();
         foreach (var e in viewPlanCollector)
         {
-
+            
             listViewIds.Add(e.Id);
 
         }
 
         return listViewIds;
+    }
+    public List<string> CheckSourceForCurve()
+    {
+        var viewPlanCollector = new FilteredElementCollector(Doc)
+        .OfClass(typeof(ViewPlan))
+        //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
+        //.Where(e => e.Name.Contains("SHEET"));
+        .Where(e => e.Name.ToLower().Contains(ViewName));
+
+
+        var viewIdsContainCurve = new List<string>();
+        // this block is for checking if curved grids exist in any of the source views. 
+        // if true, return the name of the views
+        foreach (var e in viewPlanCollector)
+        {
+            var gridCurrentView = new FilteredElementCollector(Doc, e.Id)
+                .OfClass(typeof(Grid))
+                .ToElements();
+            foreach (var g in gridCurrentView)
+            {
+                var sourceGrid = g as Grid;
+                if (sourceGrid.IsCurved == true)
+                {
+                    
+                    viewIdsContainCurve.Add(e.Name.ToLower());
+
+                }
+            }
+
+
+        }
+
+        // distinct method to remove duplicate elements.
+        return viewIdsContainCurve.Distinct().ToList();
     }
 }
 
@@ -224,7 +279,7 @@ public class ModifyArc
     {
         using (Transaction t = new Transaction(Doc))
         {
-            t.Start("test");
+            t.Start("Adjust Curved Grids");
 
             // ids of source views used for extracting the source grids
             foreach (var id in ViewIds)
