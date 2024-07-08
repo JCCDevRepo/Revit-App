@@ -49,15 +49,16 @@ namespace VDC_App
             //var SimpleForm = new SimpleForm(getAreaTwoPlanIds);
             //SimpleForm.Show();
 
+            var test = new ModifyArc(sourceViewId, getAreaTwoPlanIds, doc);
+
+            test.MoveGrid();
 
 
-
-
+            /* this was the working code before turning it into a class
+            #region transaction
             using (Transaction t = new Transaction(doc))
             {
                 t.Start("test");
-
-
 
 
                 foreach (var id in sourceViewId)
@@ -73,7 +74,10 @@ namespace VDC_App
                         var curveInView = (e as Grid).GetCurvesInView(DatumExtentType.ViewSpecific, iterationView);
                         var toGrid = e as Grid;
 
-                        //if (toGrid.IsCurved == false)
+                        if (toGrid.IsCurved == false)
+                        {
+                            continue;
+                        }
                         //foreach (var curve in curveInView)
                         //{
                         //    TaskDialog.Show("sdfs", $"0:{curve.GetEndPoint(0)}\n1:{curve.GetEndPoint(1)}");
@@ -89,16 +93,13 @@ namespace VDC_App
                             
                             var viewArc = c as Arc;
 
-                            //var curveProp = new List<CurveProperties>()
-                            //{
-                            //    new CurveProperties(){Name = toGrid.Name, Center = viewArc.Center, StartAngle = viewArc.GetEndParameter(0), EndAngle = viewArc.GetEndParameter(1), DirectionX = viewArc.XDirection, DirectionY = viewArc.YDirection}
-                            //};
 
                             // create curve object based on Area 2 reference views
                             var curveProp2 = new CurveProperties()
                             {
                                 Name = toGrid.Name, 
                                 Center = viewArc.Center,
+                                CenterZ = viewArc.Center.Z,
                                 Radius = viewArc.Radius,
                                 StartAngle = viewArc.GetEndParameter(0),
                                 EndAngle = viewArc.GetEndParameter(1),
@@ -124,11 +125,14 @@ namespace VDC_App
                                     //TaskDialog.Show("asdas", toGrid.Id.ToString());
                                     if (gridInA2.Id == toGrid.Id)
                                     {
+                                        // needed to adjust the Z value of the Center because it changes based the level of the view.
+                                        // the boundingbox max.z value contains the levels elevation value.
+                                        var adjustedCenter = new XYZ(curveProp2.Center.X, curveProp2.Center.Y, gridInA2.get_BoundingBox(iterationViewA2).Min.Z);
 
-                                        var arc = Arc.Create(curveProp2.Center, curveProp2.Radius, curveProp2.StartAngle, curveProp2.EndAngle, curveProp2.DirectionX, curveProp2.DirectionY);
+                                        var arc = Arc.Create(adjustedCenter, curveProp2.Radius, curveProp2.StartAngle, curveProp2.EndAngle, curveProp2.DirectionX, curveProp2.DirectionY);
 
                                         //TaskDialog.Show("sdfsd", $"{arc.Center}\n{arc.Radius}\n{curveProp2.StartAngle}\n{curveProp2.EndAngle}\n{arc.XDirection}\n{arc.YDirection}");
-                                        //TaskDialog.Show("sadas", arc.ToString());
+                                        //TaskDialog.Show("sadas", gridInA2.get_BoundingBox(iterationViewA2).Min.Z.ToString());
 
                                         //doc.Create.NewDetailCurve(doc.ActiveView, arc);
 
@@ -143,48 +147,7 @@ namespace VDC_App
 
 
                             }
-                            ////toGrid.SetCurveInView(DatumExtentType.ViewSpecific, iterationView, arc);
 
-
-                            //foreach(var v in curveProp)
-                            //{
-                            //    TaskDialog.Show("fjkdsjf", $"{v.Name}\n{v.Center}\n{v.StartAngle}\n{v.EndAngle}\n{v.DirectionX}\n{v.DirectionY}");
-                            //}
-
-
-
-                            //var radius = viewArc.Radius;
-
-                            ////var startAngle = 1.27985002500652;
-                            ////var endAngle = 1.33833141499587;
-                            //var startAngle = viewArc.GetEndParameter(0);
-                            //var endAngle = viewArc.GetEndParameter(1);
-
-                            //var center = new XYZ(viewArc.Center.X, viewArc.Center.Y, viewArc.Center.Z);
-                            ////var center = new XYZ(487948.00, -1118.942, 0.0);
-                            ////var xAxis = new XYZ(0.9917, 0.1281, 0.0);
-                            ////var yAxis = new XYZ(0.1281, 0.9917, 0.0);
-                            ////var xAxis = new XYZ(1.0, 0.0, 0.0);
-                            ////var yAxis = new XYZ(0.0, 1.0, 0.0);
-
-                            //// X and Y directions of the arc (use snooping tool to see)
-                            //var xAxis = new XYZ(viewArc.XDirection.X, viewArc.XDirection.Y, viewArc.XDirection.Z);
-                            //var yAxis = new XYZ(viewArc.YDirection.X, viewArc.YDirection.Y, viewArc.YDirection.Z);
-
-                            //TaskDialog.Show("asda", $"Radius:{viewArc.Radius}\ncenter:{viewArc.Center}\nXd:{viewArc.XDirection.Normalize()}\nYd:{viewArc.YDirection.Normalize()}\nStartAngle:{startAngle}\nEndAngle:{endAngle}");
-
-
-
-
-
-                            //// create a test line to see if params work
-                            //var arc = Arc.Create(center, radius, startAngle, endAngle, xAxis, yAxis);
-
-                            ////doc.Create.NewDetailCurve(doc.ActiveView, arc);
-
-
-
-                            ////toGrid.SetCurveInView(DatumExtentType.ViewSpecific, iterationView, arc);
 
                         }
                     }
@@ -199,8 +162,8 @@ namespace VDC_App
                 t.Commit();
 
             }
-
-
+            #endregion
+            */
             return Result.Succeeded;
         }
 
@@ -243,14 +206,103 @@ public class ViewsElementId
     }
 }
 
-public class CurveProperties
+public class ModifyArc
 {
-    public string Name { get; set; }
-    public double Radius { get; set; }
-    public double StartAngle { get; set; }
-    public double EndAngle { get; set; }
-    public XYZ Center { get; set; }
-    public XYZ DirectionX { get; set; }
-    public XYZ DirectionY { get; set; }
+    public Document Doc { get; set; }
+    public List<ElementId> ViewIds { get; set; }
+    public List<ElementId> AreaIds { get; set; }
+
+    public List<Arc> Arcs { get; set; }
+    public ModifyArc(List<ElementId> viewIds, List<ElementId> areaIds, Document doc)
+    {
+
+        ViewIds = viewIds;
+        AreaIds = areaIds;
+        Doc = doc;
+    }
+    public void MoveGrid()
+    {
+        using (Transaction t = new Transaction(Doc))
+        {
+            t.Start("test");
+
+            // ids of source views used for extracting the source grids
+            foreach (var id in ViewIds)
+            {
+                var iterationView = Doc.GetElement(id) as View;
+                var gridCurrentView = new FilteredElementCollector(Doc, id)
+                .OfClass(typeof(Grid))
+                .ToElements();
+
+                // get source grids and only select curved grids
+                foreach (var e in gridCurrentView)
+                {
+
+                    var curveInView = (e as Grid).GetCurvesInView(DatumExtentType.ViewSpecific, iterationView);
+                    var sourceGrid = e as Grid;
+
+                    if (sourceGrid.IsCurved == false)
+                    {
+                        continue;
+                    }
+
+                    foreach (var c in curveInView)
+                    {
+
+                        var viewArc = c as Arc;
+
+                        // this is for the grids that will be proccessed in each area view
+                        // get the Ids with the respective area.
+                        foreach (var i in AreaIds)
+                        {
+                            var iterationViewArea = Doc.GetElement(i) as View;
+                            var gridCurrentViewArea = new FilteredElementCollector(Doc, i)
+                            .OfClass(typeof(Grid))
+                            .ToElements();
+
+
+
+                            // views ids for area views
+                            foreach (var g in gridCurrentViewArea)
+                            {
+                                var gridInArea = g as Grid;
+
+
+                                if (gridInArea.Id == sourceGrid.Id)
+                                {
+                                    // needed to adjust the Z value of the Center because it changes based the level of the view.
+                                    // the boundingbox max.z value contains the levels elevation value.
+                                    var adjustedCenter = new XYZ(viewArc.Center.X, viewArc.Center.Y, gridInArea.get_BoundingBox(iterationViewArea).Min.Z);
+
+                                    var arc = Arc.Create(adjustedCenter, viewArc.Radius, viewArc.GetEndParameter(0), viewArc.GetEndParameter(1), viewArc.XDirection, viewArc.YDirection);
+
+
+                                    gridInArea.SetCurveInView(DatumExtentType.ViewSpecific, iterationViewArea, arc);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            t.Commit();
+        }
+
+    }
+
+
+
 
 }
+
+//public class CurveProperties
+//{
+//    public string Name { get; set; }
+//    public double Radius { get; set; }
+//    public double StartAngle { get; set; }
+//    public double EndAngle { get; set; }
+//    public XYZ Center { get; set; }
+//    public double CenterZ { get; set; }
+//    public XYZ DirectionX { get; set; }
+//    public XYZ DirectionY { get; set; }
+
+//}
