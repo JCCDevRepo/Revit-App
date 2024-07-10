@@ -25,9 +25,14 @@ namespace VDC_App
             //var SimpleForm = new SimpleForm(list);
             //SimpleForm.Show();
 
-
+            // returns the CurveAreaViews that has a curve in it.
+            // cancel the transaction if there are no curves or CurveAreaViews are missing
             var getCurvedGridViews = new ViewsElementId(doc, "curvegridarea").CheckSourceForCurve();
-
+            if (getCurvedGridViews.Count < 1)
+            {
+                TaskDialog.Show("Error", "Please check if curves exist or CurveAreaView plans exist");
+                return Result.Cancelled;
+            }
 
 
 
@@ -37,34 +42,146 @@ namespace VDC_App
                 {
                     case "curvegridarea1":
 
+                        var sourceArea1Id = new ViewsElementId(doc, "curvegridarea1").ElementList();
+                        var area1ViewId = new ViewsElementId(doc, "- 1").ElementList();
+                        if (area1ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea1Id, area1ViewId, doc, "Modify Grid Area1 Plan").MoveGrid();
                         break;
 
                     case "curvegridarea2":
-                        var sourceViewId = new ViewsElementId(doc, "curvegridarea2").ElementList();
 
-                        var areaPlanIds = new ViewsElementId(doc, "- 2").ElementList();
-                        new ModifyArc(sourceViewId, areaPlanIds, doc).MoveGrid();
-
+                        var sourceArea2Id = new ViewsElementId(doc, "curvegridarea2").ElementList();
+                        var area2ViewId = new ViewsElementId(doc, "- 2").ElementList();
+                        if (area2ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea2Id, area2ViewId, doc, "Modify Grid Area2 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea3":
+
+                        var sourceArea3Id = new ViewsElementId(doc, "curvegridarea3").ElementList();
+                        var area3ViewId = new ViewsElementId(doc, "- 3").ElementList();
+                        if (area3ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea3Id, area3ViewId, doc, "Modify Grid Area3 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea4":
+
+                        var sourceArea4Id = new ViewsElementId(doc, "curvegridarea4").ElementList();
+                        var area4ViewId = new ViewsElementId(doc, "- 4").ElementList();
+                        if (area4ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea4Id, area4ViewId, doc, "Modify Grid Area4 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea5":
+
+                        var sourceArea5Id = new ViewsElementId(doc, "curvegridarea5").ElementList();
+                        var area5ViewId = new ViewsElementId(doc, "- 5").ElementList();
+                        if (area5ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea5Id, area5ViewId, doc, "Modify Grid Area5 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea6":
+
+                        var sourceArea6Id = new ViewsElementId(doc, "curvegridarea6").ElementList();
+                        var area6ViewId = new ViewsElementId(doc, "- 6").ElementList();
+                        if (area6ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea6Id, area6ViewId, doc, "Modify Grid Area6 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea7":
+
+                        var sourceArea7Id = new ViewsElementId(doc, "curvegridarea7").ElementList();
+                        var area7ViewId = new ViewsElementId(doc, "- 7").ElementList();
+                        if (area7ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea7Id, area7ViewId, doc, "Modify Grid Area7 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea8":
+
+                        var sourceArea8Id = new ViewsElementId(doc, "curvegridarea8").ElementList();
+                        var area8ViewId = new ViewsElementId(doc, "- 8").ElementList();
+                        if (area8ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea8Id, area8ViewId, doc, "Modify Grid Area8 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea9":
+
+                        var sourceArea9Id = new ViewsElementId(doc, "curvegridarea9").ElementList();
+                        var area9ViewId = new ViewsElementId(doc, "- 9").ElementList();
+                        if (area9ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea9Id, area9ViewId, doc, "Modify Grid Area9 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea10":
+
+                        var sourceArea10Id = new ViewsElementId(doc, "curvegridarea10").ElementList();
+                        var area10ViewId = new ViewsElementId(doc, "- 10").ElementList();
+                        if (area10ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea10Id, area10ViewId, doc, "Modify Grid Area10 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea11":
+
+                        var sourceArea11Id = new ViewsElementId(doc, "curvegridarea11").ElementList();
+                        var area11ViewId = new ViewsElementId(doc, "- 11").ElementList();
+                        if (area11ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea11Id, area11ViewId, doc, "Modify Grid Area11 Plan").MoveGrid();
                         break;
+
                     case "curvegridarea12":
+
+                        var sourceArea12Id = new ViewsElementId(doc, "curvegridarea12").ElementList();
+                        var area12ViewId = new ViewsElementId(doc, "- 12").ElementList();
+                        if (area12ViewId.Count < 1)
+                        {
+                            TaskDialog.Show("Error", "Please check if destination view has the correct area indicator (ex: - 1 for area 1)");
+                            return Result.Cancelled;
+                        }
+                        new ModifyArc(sourceArea12Id, area12ViewId, doc, "Modify Grid Area12 Plan").MoveGrid();
                         break;
                         
                     default:
@@ -73,122 +190,8 @@ namespace VDC_App
                 }
             }
 
-
-
-            /* this was the working code before turning it into a class
-            #region transaction
-            using (Transaction t = new Transaction(doc))
-            {
-                t.Start("test");
-
-
-                foreach (var id in sourceViewId)
-                {
-                    var iterationView = doc.GetElement(id) as View;
-                    var gridCurrentView = new FilteredElementCollector(doc, id)
-                    .OfClass(typeof(Grid))
-                    .ToElements();
-
-                    foreach(var e in gridCurrentView)
-                    {
-                        
-                        var curveInView = (e as Grid).GetCurvesInView(DatumExtentType.ViewSpecific, iterationView);
-                        var toGrid = e as Grid;
-
-                        if (toGrid.IsCurved == false)
-                        {
-                            continue;
-                        }
-                        //foreach (var curve in curveInView)
-                        //{
-                        //    TaskDialog.Show("sdfs", $"0:{curve.GetEndPoint(0)}\n1:{curve.GetEndPoint(1)}");
-
-
-
-                        //}
-
-                        foreach (var c in curveInView)
-                        {
-
-
-                            
-                            var viewArc = c as Arc;
-
-
-                            // create curve object based on Area 2 reference views
-                            var curveProp2 = new CurveProperties()
-                            {
-                                Name = toGrid.Name, 
-                                Center = viewArc.Center,
-                                CenterZ = viewArc.Center.Z,
-                                Radius = viewArc.Radius,
-                                StartAngle = viewArc.GetEndParameter(0),
-                                EndAngle = viewArc.GetEndParameter(1),
-                                DirectionX = viewArc.XDirection,
-                                DirectionY = viewArc.YDirection
-                            };
-
-                            foreach (var a2 in getAreaTwoPlanIds)
-                            {
-                                var iterationViewA2 = doc.GetElement(a2) as View;
-                                var gridCurrentViewA2 = new FilteredElementCollector(doc, a2)
-                                .OfClass(typeof(Grid))
-                                .ToElements();
-
-
-
-                                // views ids for area 2 views
-                                foreach(var g in gridCurrentViewA2)
-                                {
-                                    var gridInA2 = g as Grid;
-
-                                    //TaskDialog.Show("asdas", gridInA2.Id.ToString());
-                                    //TaskDialog.Show("asdas", toGrid.Id.ToString());
-                                    if (gridInA2.Id == toGrid.Id)
-                                    {
-                                        // needed to adjust the Z value of the Center because it changes based the level of the view.
-                                        // the boundingbox max.z value contains the levels elevation value.
-                                        var adjustedCenter = new XYZ(curveProp2.Center.X, curveProp2.Center.Y, gridInA2.get_BoundingBox(iterationViewA2).Min.Z);
-
-                                        var arc = Arc.Create(adjustedCenter, curveProp2.Radius, curveProp2.StartAngle, curveProp2.EndAngle, curveProp2.DirectionX, curveProp2.DirectionY);
-
-                                        //TaskDialog.Show("sdfsd", $"{arc.Center}\n{arc.Radius}\n{curveProp2.StartAngle}\n{curveProp2.EndAngle}\n{arc.XDirection}\n{arc.YDirection}");
-                                        //TaskDialog.Show("sadas", gridInA2.get_BoundingBox(iterationViewA2).Min.Z.ToString());
-
-                                        //doc.Create.NewDetailCurve(doc.ActiveView, arc);
-
-
-                                        gridInA2.SetCurveInView(DatumExtentType.ViewSpecific, iterationViewA2, arc);
-                                    }
-                                }
-
-
-
-
-
-
-                            }
-
-
-                        }
-                    }
-
-
-
-
-                }
-
-                
-
-                t.Commit();
-
-            }
-            #endregion
-            */
             return Result.Succeeded;
         }
-
-
     }
 }
 
@@ -210,8 +213,6 @@ public class ViewsElementId
     {
         var viewPlanCollector = new FilteredElementCollector(Doc)
         .OfClass(typeof(ViewPlan))
-        //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
-        //.Where(e => e.Name.Contains("SHEET"));
         .Where(e => e.Name.ToLower().Contains(ViewName));
 
 
@@ -229,8 +230,6 @@ public class ViewsElementId
     {
         var viewPlanCollector = new FilteredElementCollector(Doc)
         .OfClass(typeof(ViewPlan))
-        //.Where(e => e.Name.Contains("LEVEL 08 - Sheet_Hangers - 1"));
-        //.Where(e => e.Name.Contains("SHEET"));
         .Where(e => e.Name.ToLower().Contains(ViewName));
 
 
@@ -257,6 +256,7 @@ public class ViewsElementId
         }
 
         // distinct method to remove duplicate elements.
+        // as we are only interested in one entry of each view
         return viewIdsContainCurve.Distinct().ToList();
     }
 }
@@ -266,20 +266,24 @@ public class ModifyArc
     public Document Doc { get; set; }
     public List<ElementId> ViewIds { get; set; }
     public List<ElementId> AreaIds { get; set; }
+    // trans number is to identify which transaction for which area ran
+    public string TransactionNumber { get; set; }
 
     public List<Arc> Arcs { get; set; }
-    public ModifyArc(List<ElementId> viewIds, List<ElementId> areaIds, Document doc)
+    public ModifyArc(List<ElementId> viewIds, List<ElementId> areaIds, Document doc, string transNumber)
     {
 
         ViewIds = viewIds;
         AreaIds = areaIds;
         Doc = doc;
+        TransactionNumber = transNumber;
+
     }
     public void MoveGrid()
     {
         using (Transaction t = new Transaction(Doc))
         {
-            t.Start("Adjust Curved Grids");
+            t.Start(TransactionNumber);
 
             // ids of source views used for extracting the source grids
             foreach (var id in ViewIds)
@@ -348,16 +352,3 @@ public class ModifyArc
 
 
 }
-
-//public class CurveProperties
-//{
-//    public string Name { get; set; }
-//    public double Radius { get; set; }
-//    public double StartAngle { get; set; }
-//    public double EndAngle { get; set; }
-//    public XYZ Center { get; set; }
-//    public double CenterZ { get; set; }
-//    public XYZ DirectionX { get; set; }
-//    public XYZ DirectionY { get; set; }
-
-//}
