@@ -34,8 +34,9 @@ namespace VDC_App
                 return Result.Cancelled;
             }
 
-
-
+            // this switch is for the expected 12 areas/scopeboxes available in the template.
+            // only works with 12 areas and under.
+            #region switch statements
             for (int i = 0; i < getCurvedGridViews.Count; i++)
             {
                 switch (getCurvedGridViews[i])
@@ -189,12 +190,14 @@ namespace VDC_App
                         break;
                 }
             }
+            #endregion
 
             return Result.Succeeded;
         }
     }
 }
 
+// view collectors to return view IDs and also checks for curves
 public class ViewsElementId
 {
 
@@ -261,6 +264,7 @@ public class ViewsElementId
     }
 }
 
+// Core of the plugin where curve properties and acquired and implemented.
 public class ModifyArc
 {
     public Document Doc { get; set; }

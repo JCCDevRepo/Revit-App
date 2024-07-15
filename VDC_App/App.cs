@@ -25,8 +25,8 @@ namespace VDC_App
             
 
             // Create a panel
-            RibbonPanel panel = application.CreateRibbonPanel(tabName, "VDC 1.1");
-            // ver 1.1 (linkdwgBySelection) added automatic detection of cloud vs Q drive central and extracts project path automatically. Also added a checkbox for worksets
+            RibbonPanel panel = application.CreateRibbonPanel(tabName, "VDC 1.2");
+            // ver 1.2 added modifygrid extents plugins
             
 
 
@@ -46,6 +46,11 @@ namespace VDC_App
             
             PushButtonData viewportsPin = new PushButtonData("Pin Viewports", "Pin Viewports", assembName, "VDC_App.ViewportsPin");
 
+            PushButtonData modifyGrid = new PushButtonData("Modify Grids", "Modify Grids", assembName, "VDC_App.ModifyGridExtents");
+            PushButtonData modifyGridCurves = new PushButtonData("Modify Curved Grids", "Modify Curved Grids", assembName, "VDC_App.ModifyGridExtentsManual");
+
+
+
 
 
             // hover discription for the buttons
@@ -54,6 +59,8 @@ namespace VDC_App
             create3D.ToolTip = "Create 3D Views for Each Level In Project";
             viewportsUnpin.ToolTip = "Unpins all Viewports on Sheets";
             viewportsPin.ToolTip = "Pins all viewports on Sheets";
+            modifyGrid.ToolTip = "Modify Grid Extents To Fit Within Cropped Annotation Views";
+            modifyGridCurves.ToolTip = "Modify Curved Grids Manually Using CurveAreaViews";
 
 
 
@@ -65,6 +72,9 @@ namespace VDC_App
             create3D.LargeImage = new BitmapImage(new Uri(path + @"\Create3DImage.png"));
             viewportsUnpin.LargeImage = new BitmapImage(new Uri(path + @"\ViewportsUnpin.png"));
             viewportsPin.LargeImage = new BitmapImage(new Uri(path + @"\ViewportsPin.png"));
+            modifyGrid.LargeImage = new BitmapImage(new Uri(path + @"\ModifyGrid.png"));
+            modifyGridCurves.LargeImage = new BitmapImage(new Uri(path + @"\ModifyGrid.png"));
+
 
 
             //create3D.Image = new BitmapImage(new Uri(path + @"\page_add_16.png"));
@@ -98,6 +108,11 @@ namespace VDC_App
             sbViewport.AddPushButton(viewportsPin);
             panel.AddSeparator();
 
+            var sb3 = new SplitButtonData("SplitButtonModifyGrid", "split");
+            var sbModifyGrid = panel.AddItem(sb3) as SplitButton;
+            sbModifyGrid.AddPushButton(modifyGrid);
+            sbModifyGrid.AddPushButton(modifyGridCurves);
+            panel.AddSeparator();
 
 
             return Result.Succeeded;
