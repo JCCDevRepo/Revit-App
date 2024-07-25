@@ -70,6 +70,7 @@
     <Compile Include="Create3DViews.cs" />
     <Compile Include="ModifyGridExtents.cs" />
     <Compile Include="ModifyGridExtentsManual.cs" />
+    <Compile Include="ViewportsMove.cs" />
     <Compile Include="ViewportsPin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleForm.xaml.cs">

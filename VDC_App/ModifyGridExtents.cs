@@ -76,8 +76,12 @@ namespace VDC_App
                     //var listPoints = new List<XYZ>();
                     #region Main Curve instructions
 
-                    // this is for displaying grids that are curved and not processed.
+                    // this is for displaying grids/views that were not processed.
                     var listCurvedGrids = new List<string>();
+                    var missingSCBox = new List<string>();
+                    var viewGridMissing = new List<string>();
+
+
 
 
                     foreach (var id in listViewIds)
@@ -87,13 +91,14 @@ namespace VDC_App
 
                         var gridCurrentView = new FilteredElementCollector(doc, id)
                             .OfClass(typeof(Grid))
-                            .ToElements();
+                            .ToList();
 
                         // error detection: if revit grids do not exist
                         if (gridCurrentView.Count <= 0)
                         {
-                            TaskDialog.Show("Grid Error", $"No Revit grids detected\n{iterationView.Name}");
-                            return Result.Cancelled;
+                            //TaskDialog.Show("Grid Error", $"No Revit grids detected\n{iterationView.Name}");
+                            //return Result.Cancelled;
+                            viewGridMissing.Add(iterationView.Name);
 
                         }
 
@@ -112,8 +117,17 @@ namespace VDC_App
                                 // cropped view checking
                                 if (iterationView.CropBoxActive == false)
                                 {
-                                    TaskDialog.Show("ScopeBox Error", $"View Does not Have Scopebox Applied\nView Name: {iterationView.Name}");
-                                    return Result.Cancelled;
+                                    //TaskDialog.Show("ScopeBox Error", $"View Does not Have Scopebox Applied\nView Name: {iterationView.Name}");
+                                    //return Result.Cancelled;
+                                    
+                                    missingSCBox.Add(iterationView.Name);
+                                    continue;
+
+                                }
+
+                                if (iterationView.Name == "LEVEL x##### - Sheet_Risers" | iterationView.Name == "LEVEL x##### - Sheet_Sketches")
+                                {
+                                    continue;
                                 }
 
                                 // no algorithm for curved grid written.
@@ -818,14 +832,35 @@ namespace VDC_App
                     }
 
                     // displays the name of the curved grids to the user
-                    if(listCurvedGrids.Count > 0)
+                    if(listCurvedGrids.Any() | missingSCBox.Any() | viewGridMissing.Any())
                     {
-                        TaskDialog.Show("Curved Grids Detected", "Curved grids were detected and not processed. Please review.");
+                        var mSCBoxTemp = missingSCBox.Distinct().ToList();
+                        var vGMTemp = viewGridMissing.Distinct().ToList();
+                        listCurvedGrids.Insert(0, "Curved Grid Lines:");
+                        listCurvedGrids.Add("Views With Missing Scope Boxes:");
+                        listCurvedGrids.AddRange(mSCBoxTemp);
+                        listCurvedGrids.Add("Views with Missing Grids:");
+                        listCurvedGrids.AddRange(vGMTemp);
+
+                        TaskDialog.Show("Issues Found", $"Curved grids, Missing Scope Boxes/Grids were detected and not processed. Please review");
 
                         var curvedGrids = new SimpleForm(listCurvedGrids);
                         curvedGrids.Show();
 
+
                     }
+                    //if (missingSCBox.Count > 0)
+                    //{
+
+                    //}
+                    //if (missingSCBox.Any())
+                    //{
+                    //    TaskDialog.Show("Issues Found", $"Scope Boxes are missing");
+                    //    var scb = new SimpleForm(missingSCBox);
+                    //    scb.Show();
+
+                    //}
+
                     #endregion
 
 
