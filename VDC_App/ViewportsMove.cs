@@ -21,23 +21,21 @@ namespace VDC_App
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
+            // get all sheets
             var viewPlanCollector = new FilteredElementCollector(doc)
             .OfClass(typeof(ViewSheet))
-            //.Where(e => e.Name.ToLower().Contains("sheet"))
+            //.Where(e => e.Name.ToLower().Contains("test"))
             .ToList();
 
 
-
-
+            // this collector is for getting the ids of linked revit models (to turn on/off)
             var linksCol = new FilteredElementCollector(doc)
             .OfClass(typeof(RevitLinkInstance))
             .Select(e => e.Id)
             .ToList();
+
+            // this is for getting the built in category id of grids. 
             var gridCategoryId = new ElementId(Convert.ToInt32(BuiltInCategory.OST_Grids));
-
-
-
-            //TaskDialog.Show("safsad", viewport.ToString());
 
             //var SimpleForm = new SimpleForm(viewPlanCollector);
             //SimpleForm.Show();
@@ -50,6 +48,8 @@ namespace VDC_App
                 {
                     var viewsheet = vp as ViewSheet;
                     var viewportId = viewsheet.GetAllViewports().Select(e => e).FirstOrDefault();
+
+                    // skip sheet if viewport doesnt exist
                     if (viewportId == null)
                     {
                         continue;
@@ -59,10 +59,8 @@ namespace VDC_App
                     var vpId = viewport.ViewId;
 
                     var getVpElem = doc.GetElement(vpId) as View;
-                    //TaskDialog.Show("ScopeBox Error", getVpElem.ToString());
 
-
-
+                    // skip if cropbox doesnt exist
                     if (getVpElem.CropBoxActive == false)
                     {
                         
@@ -73,32 +71,39 @@ namespace VDC_App
 
                     }
 
-
-
-
-                    //var constX = -7.071586620;
-                    //var constY = -0.246025528;
-                    //var maxX = -3.232489345;
-                    //var maxY = 2.965760834;
-
+                    // moving viewports to zero (title block's family must also match zero location)
                     var constX = 0;
                     var constY = 0;
 
                     var start = new XYZ(constX, constY, 0.0);
-                    //var start = new XYZ(constX, constY, 0.0);
-                    //var end = new XYZ(maxX, maxY, 0.0);
-                    //var xyz2 = new XYZ(viewport.GetBoxOutline().MinimumPoint.X + 1.65625, viewport.GetBoxOutline().MinimumPoint.Y + 1.62890625, 0.0);
+
+                    // because viewport's zero-zero is dependant on the elements are currently visible
+                    // I am turning off grids and links so that zero point is consistent across all sheets.
+                    // without this, some VPs will be placed off center.
+                    getVpElem.HideElements(linksCol);
+                    getVpElem.SetCategoryHidden(gridCategoryId, true);
+
+                    // needed a doc regen because turning off the elements affects the new zero point.
+                    doc.Regenerate();
+
+                    // main instruction to move vps to zero
+                    viewport.SetBoxCenter(start);
+
+                    // links are turned back on.
+                    getVpElem.UnhideElements(linksCol);
+                    getVpElem.SetCategoryHidden(gridCategoryId, false);
 
                     //var testLine = Line.CreateBound(start, end);
                     //doc.Create.NewDetailCurve(doc.ActiveView, testLine);
 
-                    getVpElem.HideElements(linksCol);
-                    getVpElem.SetCategoryHidden(gridCategoryId, true);
-                    viewport.SetBoxCenter(start);
-                    getVpElem.UnhideElements(linksCol);
-                    getVpElem.SetCategoryHidden(gridCategoryId, false);
-                    //TaskDialog.Show("asdasd", $"min:{outlineMin.ToString()}\nmax:{outlineMax.ToString()}");
-
+                    //var epsilon = 1e-9;
+                    //var boxCenter = viewport.GetBoxCenter();
+                    //if (Math.Abs(boxCenter.X) < epsilon & Math.Abs(boxCenter.Y) < epsilon)
+                    //{
+                    //    getVpElem.UnhideElements(linksCol);
+                    //    getVpElem.SetCategoryHidden(gridCategoryId, false);
+                    //    continue;
+                    //}
                 }
 
 
