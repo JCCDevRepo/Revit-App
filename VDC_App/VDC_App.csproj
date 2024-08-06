@@ -70,6 +70,10 @@
     <Compile Include="Create3DViews.cs" />
     <Compile Include="ModifyGridExtents.cs" />
     <Compile Include="ModifyGridExtentsManual.cs" />
+    <Compile Include="ProjectSetup.cs" />
+    <Compile Include="ProjectSetupUI.xaml.cs">
+      <DependentUpon>ProjectSetupUI.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewportsMove.cs" />
     <Compile Include="ViewportsPin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -85,6 +89,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="LinkDwgBySelectionUI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ProjectSetupUI.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

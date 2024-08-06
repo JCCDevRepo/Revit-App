@@ -1,0 +1,46 @@
+﻿<Window x:Class="VDC_App.ProjectSetupUI"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDC_App"
+             mc:Ignorable="d" 
+             ResizeMode="CanResize" Title="Project Setup" MaxHeight="500" MaxWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+
+        <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Left" Margin="0, 0, 0, -100">
+            <TabItem Header="test">
+                <TextBlock TextWrapping="WrapWithOverflow">
+                    sdfsdfsdfsdfsdfsdfsdfsdfsdfs
+                </TextBlock>
+            </TabItem>
+            <TabItem Header="View Range Setup">
+                <ListView Name="Levels" Width="200">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}"  Width="auto"/>
+                            <GridViewColumn Header="Elevation" DisplayMemberBinding="{Binding Elevation}" Width="auto"/>
+                        </GridView>
+                    </ListView.View>
+
+                </ListView>
+
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</Window>
