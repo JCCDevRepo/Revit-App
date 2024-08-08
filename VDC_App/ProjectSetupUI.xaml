@@ -22,18 +22,19 @@
             <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
 
-        <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Left" Margin="0, 0, 0, -100">
+        <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Left">
             <TabItem Header="test">
                 <TextBlock TextWrapping="WrapWithOverflow">
                     sdfsdfsdfsdfsdfsdfsdfsdfsdfs
                 </TextBlock>
             </TabItem>
             <TabItem Header="View Range Setup">
-                <ListView Name="Levels" Width="200">
+                <ListView Name="Levels" Width="600">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}"  Width="auto"/>
-                            <GridViewColumn Header="Elevation" DisplayMemberBinding="{Binding Elevation}" Width="auto"/>
+                            <GridViewColumn Header="Level" DisplayMemberBinding="{Binding levelUi}"  Width="auto"/>
+                            <GridViewColumn Header="Elevation" DisplayMemberBinding="{Binding elevationUi}" Width="auto"/>
+                            <GridViewColumn Header="View Range" DisplayMemberBinding="{Binding viewRangeUi}" Width="auto"/>
                         </GridView>
                     </ListView.View>
 
