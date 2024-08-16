@@ -3,9 +3,13 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using VDC_App;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace VDC_App
@@ -20,13 +24,19 @@ namespace VDC_App
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-
+            #region apply template testing
+            /*
             // get the view template
-            var view = new FilteredElementCollector(doc)
-                .OfClass(typeof(View))
-                .Cast<View>()
-                .Where(x => x.Name.Equals("VDC_ViewRange - LEVEL x0001"));
-            var template = view.FirstOrDefault() as ViewPlan;
+            //var view = new FilteredElementCollector(doc)
+            //    .OfClass(typeof(View))
+            //    .Cast<View>()
+            //    .Where(x => x.Name.Equals("VDC_ViewRange - LEVEL x0001"));
+            //var template = view.FirstOrDefault() as ViewPlan;
+
+            var viewCol = new collector(doc, "vdc_viewrange").GetViewsList();
+            //var form = new SimpleForm(viewCol);
+            //form.ShowDialog();
+
 
             // get the view you want to apply the template to
             var viewTest = new FilteredElementCollector(doc)
@@ -34,99 +44,113 @@ namespace VDC_App
                 .Cast<View>()
                 .Where(x => x.Name.Equals("LEVEL x0001"));
 
-            // get list of levels in project
-            var levels = new collector(doc).GetLevelsList();
+            */
+            #endregion
 
-            // create the WPF object
-            var ui = new ProjectSetupUI();
+            #region generate levels for UI input
+            //// get list of levels in project
+            //var levels = new collector(doc).GetLevelsList();
 
-            var tempOrdered = levels.OrderBy(e => e.Elevation).ToList();
-            var tempLevElev = new List<LevelsElevations>();
+            //// create the WPF object
 
-            for (int i = 0; i < tempOrdered.Count; i++)
-            {
-                var test = 0.0;
-                if (i == tempOrdered.Count - 1)
-                {
-                    test = 50.0;
-                    
-                }
-                else
-                {
-                    test = tempOrdered[i + 1].Elevation - tempOrdered[i].Elevation;
 
-                }
-                tempLevElev.Add(new LevelsElevations(tempOrdered[i].Name, tempOrdered[i].Elevation, test, tempOrdered[i].Id));
-            }
+            //var orderedLevels = levels.OrderBy(e => e.Elevation).ToList();
+            //var levelParams = new List<LevelsElevations>();
 
-            //foreach (var e in tempOrdered)
+            //for (int i = 0; i < orderedLevels.Count; i++)
             //{
-            //    //TaskDialog.Show("sdsa", e.Elevation.ToString());
-            //    tempLevElev.Add(new LevelsElevations(e.Name, e.Elevation));
-
-
-            //}
-
-
-            //var groupByElevation = tempLevElev
-            //    .OrderBy(e => e.Elevation)
-            //    .ToList();
-
-            //var viewRangeCal = groupByElevation
-            //    .Select(e => e.Elevation)
-            //    .ToList();
-
-
-            //var sd = new List<LevelsElevations>();
-
-            //for (var i = 0; i < viewRangeCal.Count; i++)
-            //{
-            //    if (i == viewRangeCal.Count - 1)
+            //    var viewR = 0.0;
+            //    // The highest level in the iteration is set to 50ft
+            //    if (i == orderedLevels.Count - 1)
             //    {
-            //        continue;
+            //        viewR = 50.0;
+                    
             //    }
+            //    else
+            //    {
+            //        // take the difference between level above and current level to get the view range
+            //        viewR = orderedLevels[i + 1].Elevation - orderedLevels[i].Elevation;
 
-            //    var test = viewRangeCal[i + 1] - viewRangeCal[i];
-
-            //    sd.Add(new LevelsElevations(test));
-            //    //sd.Add(test);
-
+            //    }
+            //    levelParams.Add(new LevelsElevations(orderedLevels[i].Name, orderedLevels[i].Elevation, viewR, orderedLevels[i].Id));
             //}
 
 
 
-            foreach (var e in tempLevElev)
+            //// bind parameters to the UI 
+            //foreach (var e in levelParams)
+            //{
+
+            //    ui.Levels.Items.Add(new { levelUi = e.Level, elevationUi = e.Elevation, viewRangeUi = e.ViewRange, viewIdUi = e.Id });
+            //}
+
+
+            //var form = new SimpleForm(levelParams);
+            //form.ShowDialog();
+
+            #endregion
+
+            #region View template toggles
+            /*
+            var viewCollector = new FilteredElementCollector(doc)
+                .OfClass(typeof(View))
+                .Cast<View>()
+                .Where(e => e.Name.Equals("_View Templates"))
+                .FirstOrDefault();
+
+            var viewTemplate = new FilteredElementCollector(doc)
+                .OfClass(typeof(View))
+                .Cast<View>()
+                .Where(e => e.Name.Equals("test"))
+                .FirstOrDefault();
+            //TaskDialog.Show("asdas", viewCollector.Name);
+
+            // ids for View category, subcategory and assign coordinator name (do not want to be included in template) 
+            var viewCatParams = viewCollector.GetNonControlledTemplateParameterIds();
+            var viewParams = new List<ElementId>();
+            var tasdas = new ElementId(BuiltInParameter.PLAN_VIEW_RANGE);
+            
+            foreach (var param in viewTemplate.GetTemplateParameterIds()) 
             {
+                if (param == tasdas)
+                    continue;
+                //var p = param as Parameter;
+                viewParams.Add(param);
+                //TaskDialog.Show("asdas", param.IntegerValue.ToString());
 
-                ui.Levels.Items.Add(new { levelUi = e.Level, elevationUi = e.Elevation, viewRangeUi = e.ViewRange });
             }
+            */
+            #endregion 
+
+            //using (Transaction t = new Transaction(doc))
+            //{
+            //    t.Start("Set View Range");
+            //    #region apply template testing
+            //    //var vr = template.GetViewRange();
+            //    //vr.SetOffset(PlanViewPlane.TopClipPlane, 30.0);
+            //    //template.SetViewRange(vr);
 
 
-            var form = new SimpleForm(tempLevElev);
-            form.ShowDialog();
-            ui.Show();
-
-            //var test = Level.GetNearestLevelId(doc, 19.5);
-            using (Transaction t = new Transaction(doc))
-            {
-                t.Start("Set View Range");
-
-                //var vr = template.GetViewRange();
-                //vr.SetOffset(PlanViewPlane.TopClipPlane, 30.0);
-                //template.SetViewRange(vr);
+            //    //vr.SetOffset(PlanViewPlane.BottomClipPlane, 1.0);
+            //    //template.SetViewRange(vr);
 
 
-                //vr.SetOffset(PlanViewPlane.BottomClipPlane, 1.0);
-                //template.SetViewRange(vr);
+            //    //viewTest.FirstOrDefault().ApplyViewTemplateParameters(template);
+            //    #endregion
 
+            //    //viewCollector.SetNonControlledTemplateParameterIds(viewCatParams);
+            //    //viewCollector.SetNonControlledTemplateParameterIds();
 
-                //viewTest.FirstOrDefault().ApplyViewTemplateParameters(template);
+            //    //viewCollector.AreModelCategoriesHidden = true;
+            //    //viewCollector.CreateViewTemplate();
 
+            //    //viewTemplate.SetNonControlledTemplateParameterIds(viewParams);
 
+            //    t.Commit();
+            //}
 
-                t.Commit();
-            }
-
+            var ui = new ProjectSetupUI(doc);
+            ui.ShowDialog();
 
 
             return Result.Succeeded;
@@ -174,7 +198,7 @@ public class collector
             .Cast<View>()
             .Where(e => e.Name.ToLower().Contains(ViewName))
             .ToList();
-            
+
         return colList;
     }
 
@@ -188,5 +212,60 @@ public class collector
             .ToList();
         return levelsCol;
     }
+}
+
+public class EditViewTemplate
+{
+    public Document Doc { get; set; }
+    public View View { get; set; }
+
+    public List<ElementId> LevelId { get; set; }
+    public EditViewTemplate(Document doc)
+    {
+        Doc = doc;
+    }
+
+    public EditViewTemplate(Document doc, List<ElementId> levelId)
+    {
+        Doc = doc;
+        LevelId = levelId;
+    }
+
+    public List<ElementId> SetViewRange()
+    {
+        // get the view/template reference to copy
+        var viewTP = new FilteredElementCollector(Doc)
+            .OfClass(typeof(View))
+            .Cast<View>()
+            .Where(e => e.Name.Equals("_View Templates"))
+            .FirstOrDefault();
+        if (viewTP == null)
+        {
+            MessageBox.Show("Missing \"_Blank View Template\" Template or \"_View Templates\" View", "View Template Reference Error");
+
+        }
+
+
+        // ids for View category, subcategory and assign coordinator name (do not want to be included in template) 
+        var viewRangeId = new ElementId(BuiltInParameter.PLAN_VIEW_RANGE);
+
+        var viewParams = new List<ElementId>();
+
+        foreach (var parameter in viewTP.GetTemplateParameterIds())
+        {
+            // skip the viewrangeid (how it works is: id exluded = leave the checkbox turned on)
+            if (parameter == viewRangeId)
+                continue;
+
+            viewParams.Add(parameter);
+
+        }
+
+        View = viewTP;
+        return viewParams;
+
+    }
+
+
 }
 
