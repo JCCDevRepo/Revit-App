@@ -25,19 +25,19 @@ namespace VDC_App
     {
         private Document Doc;
 
-        private List<LevelsElevations> SelectedElemList;
+        private List<LevelsElevations> SelectedElemVR;
 
         public ProjectSetupUI(Document doc)
         {
             Doc = doc;
 
             InitializeComponent();
-            PopulateLevels();
+            PopulateVR();
 
 
 
         }
-        private void PopulateLevels()
+        private void PopulateVR()
         {
             // get list of levels in project
             var levels = new collector(Doc).GetLevelsList();
@@ -66,25 +66,26 @@ namespace VDC_App
 
             foreach (var i in levelParams)
             {
-                LevelsInfo.Items.Add(i);
+                ViewRangeSetup.Items.Add(i);
+                CreatViewsSetup.Items.Add(i);
             }
 
 
 
         }
 
-        private void vrButton_Click(object sender, RoutedEventArgs e)
+        private void vtButton_Click(object sender, RoutedEventArgs e)
         {
-            SelectedElemList = new List<LevelsElevations>();
-            if (LevelsInfo.SelectedItems.Count > 0)
+            SelectedElemVR = new List<LevelsElevations>();
+            if (ViewRangeSetup.SelectedItems.Count > 0)
             {
-                foreach (var i in LevelsInfo.SelectedItems)
+                foreach (var i in ViewRangeSetup.SelectedItems)
                 {
                     var selectedLevInfo = i as LevelsElevations;
 
                     //MessageBox.Show(selectedLevInfo.Id.ToString(), "test", MessageBoxButton.OK);
 
-                    SelectedElemList.Add(selectedLevInfo);
+                    SelectedElemVR.Add(selectedLevInfo);
 
                 }
 
@@ -104,15 +105,13 @@ namespace VDC_App
             //MessageBox.Show(paramList.View.Name, "Selection Error", MessageBoxButton.OK);
 
             CreateViewTemplates();
+
+
             //this.Close();
         }
 
         private void CreateViewTemplates()
         {
-
-            var paramList = new EditViewTemplate(Doc);
-            var turnOffList = paramList.SetViewRange();
-            var view = paramList.View;
             try
             {
                 using (Transaction t = new Transaction(Doc))
@@ -120,61 +119,132 @@ namespace VDC_App
 
                     t.Start("Create View Template");
 
-                    foreach (var e in SelectedElemList)
+
+
+                    var paramList = new EditViewTemplate(Doc);
+                    var turnOffList = paramList.TemplateCreationInfo();
+                    var refView = paramList.View;
+                    var vToViewPlan = refView as ViewPlan;
+                    var vr = vToViewPlan.GetViewRange();
+
+
+
+                    foreach (var e in SelectedElemVR)
                     {
                         var levElement = Doc.GetElement(e.Id);
                         var levName = levElement.Name;
                         var vrInput = e.ViewRange;
-                        var vToViewPlan = view as ViewPlan;
 
-                        var vr = vToViewPlan.GetViewRange();
+                        var templatesList = new collector(Doc, "vdc_viewrange").GetTemplatesList()
+                            .Where(i => i.Name.Contains(levName)).FirstOrDefault();
+                        //MessageBox.Show(templatesList.ToString());
 
-                        // need to figure out what the parameter that is used for associated level in view ranges
-                        var assoLev = new ElementId(BuiltInParameter.ASSOCIATED_LEVEL_OFFSET);
 
-                        vr.SetLevelId(PlanViewPlane.TopClipPlane, assoLev);
+                        if ( templatesList != null )
+                        {
+                            MessageBox.Show($"Duplicate Template detected: {levName}\nTemplate Creation Skipped");
+                            continue;
+                        }
 
-                        //vr.SetOffset(PlanViewPlane.CutPlane, 30.0);
-                        //vr.SetOffset(PlanViewPlane.TopClipPlane, 30.0);
+                        // commentted code below can be used to set vr to the associated levels
+                        // slight issue of offset defaulting to level elevation.
+
+                        //vr.SetLevelId(PlanViewPlane.TopClipPlane, e.Id);
+                        //vr.SetLevelId(PlanViewPlane.CutPlane, e.Id);
+                        //vr.SetLevelId(PlanViewPlane.BottomClipPlane, e.Id);
+                        //vr.SetLevelId(PlanViewPlane.ViewDepthPlane, e.Id);
+                        //vToViewPlan.SetViewRange(vr);
+
+
+                        vr.SetOffset(PlanViewPlane.CutPlane, e.ViewRange);
+                        vr.SetOffset(PlanViewPlane.TopClipPlane, e.ViewRange);
 
                         vToViewPlan.SetViewRange(vr);
 
 
-                        //vr.SetOffset(PlanViewPlane.BottomClipPlane, 1.0);
-                        //vToViewPlan.SetViewRange(vr);
+                        vr.SetOffset(PlanViewPlane.BottomClipPlane, 0.0);
+                        vr.SetOffset(PlanViewPlane.ViewDepthPlane, 0.0);
+
+                        vToViewPlan.SetViewRange(vr);
 
 
 
-                        view.Name = "VDC_ViewRange - " + levName;
-                        view.SetNonControlledTemplateParameterIds(turnOffList);
-                        view.CreateViewTemplate();
-                        
+                        refView.Name = "VDC_ViewRange - " + levName;
+                        refView.SetNonControlledTemplateParameterIds(turnOffList);
+                        refView.CreateViewTemplate();
+
                     }
 
-                    // reset template reference name
-                    view.Name = "_View Templates";
+                    // reset template references
+                    Doc.Regenerate();
+                    refView.Name = "_View Templates";
+
+                    vr.SetOffset(PlanViewPlane.CutPlane, 0.0);
+                    vr.SetOffset(PlanViewPlane.TopClipPlane, 0.0);
+
+                    vToViewPlan.SetViewRange(vr);
+
+
+                    vr.SetOffset(PlanViewPlane.BottomClipPlane, 0.0);
+                    vr.SetOffset(PlanViewPlane.ViewDepthPlane, 0.0);
+
+                    vToViewPlan.SetViewRange(vr);
+
+                    RenameViewTemplates();
 
                     t.Commit();
-                }
 
+
+                }
             }
             catch (Exception ex)
             {
-                TaskDialog.Show("asdas", ex.ToString());
-
+                TaskDialog.Show("Error Detected", ex.ToString());
 
             }
-
-
-
-            //private void Test()
-            //{
-            //    if (ElemIdList != null)
-            //    {
-            //        var simpF = new SimpleForm(ElemIdList);
-            //        simpF.Show();
-            //    }
-            //}
+            
         }
+
+        private void RenameViewTemplates()
+        {
+
+            try
+            {
+                var templatesList = new collector(Doc, "vdc_viewrange").GetTemplatesList()
+                    .Where(e => e.Name.Contains("Copy"));
+
+                if (templatesList != null)
+                {
+                    foreach (var e in templatesList)
+                    {
+                        var originalName = e.Name;
+
+                        var indexOfCopy = originalName.IndexOf("Copy");
+
+                        e.Name = originalName.Remove(indexOfCopy - 1);
+                        //MessageBox.Show(e.Name);
+
+                    }
+
+                }
+                else
+                {
+                    MessageBox.Show("Template Error", "No View Range Templates Found");
+
+                }
+
+            }
+            catch 
+            {
+                MessageBox.Show("template already exists");
+                
+
+            }
+            // get the viewrange templates list
+            // select only the ones with "copy" in the name
+
+
+        }
+
     }
 }

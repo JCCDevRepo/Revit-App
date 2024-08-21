@@ -202,6 +202,18 @@ public class collector
         return colList;
     }
 
+    public List<View> GetTemplatesList()
+    {
+        var templateList = new FilteredElementCollector(Doc)
+            .OfClass(typeof(View))
+            .Cast<View>()
+            .Where(e => e.Name.ToLower().Contains(ViewName))
+            .Where(e => e.IsTemplate == true)
+            .ToList();
+
+        return templateList;
+    }
+
     public List<Level> GetLevelsList()
     {
         var levelsCol = new FilteredElementCollector(Doc)
@@ -231,7 +243,7 @@ public class EditViewTemplate
         LevelId = levelId;
     }
 
-    public List<ElementId> SetViewRange()
+    public List<ElementId> TemplateCreationInfo()
     {
         // get the view/template reference to copy
         var viewTP = new FilteredElementCollector(Doc)
@@ -241,7 +253,7 @@ public class EditViewTemplate
             .FirstOrDefault();
         if (viewTP == null)
         {
-            MessageBox.Show("Missing \"_Blank View Template\" Template or \"_View Templates\" View", "View Template Reference Error");
+            MessageBox.Show("Missing \"_View Templates\" View", "View Template Reference Error");
 
         }
 
