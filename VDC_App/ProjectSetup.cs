@@ -148,9 +148,16 @@ namespace VDC_App
 
             //    t.Commit();
             //}
+            try
+            {
+                var ui = new ProjectSetupUI(doc);
+                ui.ShowDialog();
+            }
 
-            var ui = new ProjectSetupUI(doc);
-            ui.ShowDialog();
+            catch 
+            {
+            }
+
 
 
             return Result.Succeeded;
@@ -279,5 +286,30 @@ public class EditViewTemplate
     }
 
 
+
+}
+
+public class UserSelectedItems
+{
+    public DataGrid DataGrid { get; set; }
+
+    public UserSelectedItems(DataGrid dataGrid)
+    {
+        DataGrid = dataGrid;
+    }
+    public List<LevelsElevations> ReturnSelectedItems()
+    {
+        var levelsInfo = new List<LevelsElevations>();
+        foreach (var i in DataGrid.SelectedItems)
+        {
+            var selectedLevInfo = i as LevelsElevations;
+
+            //MessageBox.Show(selectedLevInfo.Id.ToString(), "test", MessageBoxButton.OK);
+
+            levelsInfo.Add(selectedLevInfo);
+
+        }
+        return levelsInfo;
+    }
 }
 

@@ -25,23 +25,28 @@ namespace VDC_App
     {
         private Document Doc;
 
-        private List<LevelsElevations> SelectedElemVR;
+        private List<LevelsElevations> UserSelected;
 
         public ProjectSetupUI(Document doc)
         {
             Doc = doc;
 
             InitializeComponent();
-            PopulateVR();
+            PopulateLevels();
 
 
 
         }
-        private void PopulateVR()
+        private void PopulateLevels()
         {
             // get list of levels in project
             var levels = new collector(Doc).GetLevelsList();
 
+            if (levels.Count < 1)
+            {
+                MessageBox.Show("No Levels Detected.\nPlease Make Sure Levels Exist And Placed On the Correct Workset\n", "Levels Error", MessageBoxButton.OK );
+                this.Close();
+            }
 
             var orderedLevels = levels.OrderBy(e => e.Elevation).ToList();
             var levelParams = new List<LevelsElevations>();
@@ -76,25 +81,31 @@ namespace VDC_App
 
         private void vtButton_Click(object sender, RoutedEventArgs e)
         {
-            SelectedElemVR = new List<LevelsElevations>();
-            if (ViewRangeSetup.SelectedItems.Count > 0)
-            {
-                foreach (var i in ViewRangeSetup.SelectedItems)
-                {
-                    var selectedLevInfo = i as LevelsElevations;
+            //UserSelected = new List<LevelsElevations>();
+            //if (ViewRangeSetup.SelectedItems.Count > 0)
+            //{
+            //    foreach (var i in ViewRangeSetup.SelectedItems)
+            //    {
+            //        var selectedLevInfo = i as LevelsElevations;
 
-                    //MessageBox.Show(selectedLevInfo.Id.ToString(), "test", MessageBoxButton.OK);
+            //        //MessageBox.Show(selectedLevInfo.Id.ToString(), "test", MessageBoxButton.OK);
 
-                    SelectedElemVR.Add(selectedLevInfo);
+            //        UserSelected.Add(selectedLevInfo);
 
-                }
+            //    }
 
-            }
-            else
+            //}
+            //else
+            //{
+            //    MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
+            //}
+
+            UserSelected = new UserSelectedItems(ViewRangeSetup).ReturnSelectedItems();
+
+            if(UserSelected.Count < 1)
             {
                 MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
             }
-
 
             //var simpF = new SimpleForm(test);
             //simpF.Show();
@@ -102,7 +113,6 @@ namespace VDC_App
 
 
 
-            //MessageBox.Show(paramList.View.Name, "Selection Error", MessageBoxButton.OK);
 
             CreateViewTemplates();
 
@@ -110,6 +120,52 @@ namespace VDC_App
             //this.Close();
         }
 
+        private void viewsButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var selectedItems = new UserSelectedItems(CreatViewsSetup).ReturnSelectedItems();
+                UserSelected = selectedItems;
+                foreach (var i in UserSelected)
+                {
+                MessageBox.Show(i.Id.ToString());
+
+                }
+
+                var viewTypeCol = new FilteredElementCollector(Doc)
+                    .OfClass(typeof(ViewFamilyType))
+                    .Where(f => f.Name.Equals("-Working")).FirstOrDefault();
+                //if (viewTypeCol == null)
+                //{
+                //    MessageBox.Show("-Working View Family Type Is Missing");
+                //}
+
+                //using (Transaction t = new Transaction(Doc))
+                //{
+                //    t.Start("Create Views");
+                //    //var simpform = new SimpleForm(viewTypeCol);
+                //    //simpform.Show();
+                //    foreach (var l in UserSelected)
+                //    {
+                //        var viewPlanElement = Doc.GetElement(l.Id) as ViewPlan;
+
+                //        var floorPlan = ViewPlan.Create(Doc, viewTypeCol.Id, l.Id);
+                //    }
+                //    t.Commit();
+                //}
+
+            }
+            catch(Exception ex) 
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+        }
+
+
+
+
+        #region Create View Templates
         private void CreateViewTemplates()
         {
             try
@@ -129,7 +185,7 @@ namespace VDC_App
 
 
 
-                    foreach (var e in SelectedElemVR)
+                    foreach (var e in UserSelected)
                     {
                         var levElement = Doc.GetElement(e.Id);
                         var levName = levElement.Name;
@@ -245,6 +301,10 @@ namespace VDC_App
 
 
         }
+        #endregion
+
 
     }
+
+
 }
