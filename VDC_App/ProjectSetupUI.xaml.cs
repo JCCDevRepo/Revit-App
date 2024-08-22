@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.ApplicationServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Application = Autodesk.Revit.ApplicationServices.Application;
+using Autodesk.Revit.DB.Events;
+using System.Drawing;
 
 namespace VDC_App
 {
@@ -24,12 +28,17 @@ namespace VDC_App
     public partial class ProjectSetupUI : Window
     {
         private Document Doc;
+        private Application App;
+        //private DocumentChangedEventArgs DocumentChangedEventArgs;
 
         private List<LevelsElevations> UserSelected;
+        private List<ElementId> NewIds;
 
-        public ProjectSetupUI(Document doc)
+
+        public ProjectSetupUI(Document doc, Application app)
         {
             Doc = doc;
+            App = app;
 
             InitializeComponent();
             PopulateLevels();
@@ -102,7 +111,7 @@ namespace VDC_App
 
             UserSelected = new UserSelectedItems(ViewRangeSetup).ReturnSelectedItems();
 
-            if(UserSelected.Count < 1)
+            if(UserSelected.Count == 0)
             {
                 MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
             }
@@ -124,44 +133,73 @@ namespace VDC_App
         {
             try
             {
-                var selectedItems = new UserSelectedItems(CreatViewsSetup).ReturnSelectedItems();
-                UserSelected = selectedItems;
-                foreach (var i in UserSelected)
-                {
-                MessageBox.Show(i.Id.ToString());
+                //return the user selected items from the UI
+                UserSelected = new UserSelectedItems(CreatViewsSetup).ReturnSelectedItems();
 
+                if (UserSelected.Count == 0)
+                {
+                    MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
+                    return;
                 }
 
-                var viewTypeCol = new FilteredElementCollector(Doc)
-                    .OfClass(typeof(ViewFamilyType))
-                    .Where(f => f.Name.Equals("-Working")).FirstOrDefault();
-                //if (viewTypeCol == null)
-                //{
-                //    MessageBox.Show("-Working View Family Type Is Missing");
-                //}
-
-                //using (Transaction t = new Transaction(Doc))
-                //{
-                //    t.Start("Create Views");
-                //    //var simpform = new SimpleForm(viewTypeCol);
-                //    //simpform.Show();
-                //    foreach (var l in UserSelected)
-                //    {
-                //        var viewPlanElement = Doc.GetElement(l.Id) as ViewPlan;
-
-                //        var floorPlan = ViewPlan.Create(Doc, viewTypeCol.Id, l.Id);
-                //    }
-                //    t.Commit();
-                //}
-
+                CreateViews();
             }
-            catch(Exception ex) 
+
+
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
 
+
         }
 
+        private void OnDocumentChanged(object sender, DocumentChangedEventArgs e)
+        {
+            //MessageBox.Show(i.ToString());
+            NewIds.AddRange(e.GetAddedElementIds());
+        }
+
+
+        #region Create Views
+        private void CreateViews()
+        {
+            // get the view family type of "-working"
+            var viewTypeCol = new FilteredElementCollector(Doc)
+                .OfClass(typeof(ViewFamilyType))
+                .Where(f => f.Name.Equals("-Working")).FirstOrDefault();
+
+            if (viewTypeCol == null)
+            {
+                MessageBox.Show("-Working View Family Type Is Missing");
+            }
+
+            NewIds = new List<ElementId>();
+            // event that returns the newly created element ids
+            App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(OnDocumentChanged);
+
+            using (Transaction t = new Transaction(Doc))
+            {
+                t.Start("Create Views");
+                //var simpform = new SimpleForm(viewTypeCol);
+                //simpform.Show();
+                foreach (var l in UserSelected)
+                {
+                    var viewPlanElement = Doc.GetElement(l.Id) as ViewPlan;
+
+                    var floorPlan = ViewPlan.Create(Doc, viewTypeCol.Id, l.Id);
+
+                }
+                t.Commit();
+            }
+
+            App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(OnDocumentChanged);
+
+            //var simpF = new SimpleForm(NewIds);
+            //simpF.Show();
+        }
+    
+        #endregion
 
 
 

@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace VDC_App
             UIApplication uiapp = commandData.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
+            Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
 
             #region apply template testing
             /*
@@ -150,7 +152,7 @@ namespace VDC_App
             //}
             try
             {
-                var ui = new ProjectSetupUI(doc);
+                var ui = new ProjectSetupUI(doc, app);
                 ui.ShowDialog();
             }
 
