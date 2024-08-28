@@ -33,6 +33,7 @@ namespace VDC_App
 
         private List<LevelsElevations> UserSelected;
         private List<ElementId> NewIds;
+        private List<ViewTypes> SelectedViewTypes;
 
 
         public ProjectSetupUI(Document doc, Application app)
@@ -42,9 +43,16 @@ namespace VDC_App
 
             InitializeComponent();
             PopulateLevels();
+            PopulateViewTypes();
 
 
-
+        }
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                this.Close();
+            }
         }
         private void PopulateLevels()
         {
@@ -88,28 +96,38 @@ namespace VDC_App
 
         }
 
+        private void PopulateViewTypes()
+        {
+            //var types = new List<string> { "Working", "ShopDrawings", "Sleeving", "AccessPanels", "BeamPens", "Hangers", "PadDrawings", "PointsLoad", "Risers", "Sketches", "WallPens", "Custom" };
+            var viewsList = new List<ViewTypes>
+            {
+                new ViewTypes { ViewType = "Working"},
+                new ViewTypes { ViewType = "ShopDrawings"},
+                new ViewTypes { ViewType = "Sleeving"},
+                new ViewTypes { ViewType = "AccessPanels"},
+                new ViewTypes { ViewType = "BeamPens"},
+                new ViewTypes { ViewType = "Hangers"},
+                new ViewTypes { ViewType = "PadDrawings"},
+                new ViewTypes { ViewType = "PointLoad"},
+                new ViewTypes { ViewType = "Risers"},
+                new ViewTypes { ViewType = "Sketches"},
+                new ViewTypes { ViewType = "WallPens"},
+                new ViewTypes { ViewType = "Custom"},
+
+            };
+
+            foreach (var v in viewsList)
+            {
+                //ViewTypeSetup.Items.Add(new { ViewTypes = v});
+                ViewTypeSetup.Items.Add(v);
+
+            }
+        }
+
         private void vtButton_Click(object sender, RoutedEventArgs e)
         {
-            //UserSelected = new List<LevelsElevations>();
-            //if (ViewRangeSetup.SelectedItems.Count > 0)
-            //{
-            //    foreach (var i in ViewRangeSetup.SelectedItems)
-            //    {
-            //        var selectedLevInfo = i as LevelsElevations;
-
-            //        //MessageBox.Show(selectedLevInfo.Id.ToString(), "test", MessageBoxButton.OK);
-
-            //        UserSelected.Add(selectedLevInfo);
-
-            //    }
-
-            //}
-            //else
-            //{
-            //    MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
-            //}
-
-            UserSelected = new UserSelectedItems(ViewRangeSetup).ReturnSelectedItems();
+    
+            UserSelected = new UserSelectedItems(ViewRangeSetup).SelectedLevels();
 
             if(UserSelected.Count == 0)
             {
@@ -134,7 +152,7 @@ namespace VDC_App
             try
             {
                 //return the user selected items from the UI
-                UserSelected = new UserSelectedItems(CreatViewsSetup).ReturnSelectedItems();
+                UserSelected = new UserSelectedItems(CreatViewsSetup).SelectedLevels();
 
                 if (UserSelected.Count == 0)
                 {
@@ -142,7 +160,10 @@ namespace VDC_App
                     return;
                 }
 
-                CreateViews();
+                //CreateViews();
+                //RenameViews();
+                CreateDependentViews();
+
             }
 
 
@@ -154,25 +175,32 @@ namespace VDC_App
 
         }
 
-        private void OnDocumentChanged(object sender, DocumentChangedEventArgs e)
-        {
-            //MessageBox.Show(i.ToString());
-            NewIds.AddRange(e.GetAddedElementIds());
-        }
 
 
         #region Create Views
         private void CreateViews()
         {
             // get the view family type of "-working"
-            var viewTypeCol = new FilteredElementCollector(Doc)
+            var viewFamilyCol = new FilteredElementCollector(Doc)
                 .OfClass(typeof(ViewFamilyType))
                 .Where(f => f.Name.Equals("-Working")).FirstOrDefault();
 
-            if (viewTypeCol == null)
+            if (viewFamilyCol == null)
             {
                 MessageBox.Show("-Working View Family Type Is Missing");
+                return;
             }
+
+            SelectedViewTypes = new UserSelectedItems(ViewTypeSetup).SelectedViewTypes();
+            if (SelectedViewTypes.Count == 0)
+            {
+                MessageBox.Show("Please Select A View Type", "Selection Error", MessageBoxButton.OK);
+                return;
+            }
+
+
+
+
 
             NewIds = new List<ElementId>();
             // event that returns the newly created element ids
@@ -180,27 +208,148 @@ namespace VDC_App
 
             using (Transaction t = new Transaction(Doc))
             {
+
                 t.Start("Create Views");
                 //var simpform = new SimpleForm(viewTypeCol);
                 //simpform.Show();
                 foreach (var l in UserSelected)
                 {
                     var viewPlanElement = Doc.GetElement(l.Id) as ViewPlan;
+                    var i = 0;
+                    while (i < SelectedViewTypes.Count)
+                    {
 
-                    var floorPlan = ViewPlan.Create(Doc, viewTypeCol.Id, l.Id);
+                        ViewPlan.Create(Doc, viewFamilyCol.Id, l.Id);
+
+                        i++;
+                    }
+
+
+
 
                 }
+
                 t.Commit();
             }
 
             App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(OnDocumentChanged);
 
+
+
             //var simpF = new SimpleForm(NewIds);
             //simpF.Show();
         }
-    
-        #endregion
 
+        private void OnDocumentChanged(object sender, DocumentChangedEventArgs e)
+        {
+            //MessageBox.Show(i.ToString());
+            NewIds.AddRange(e.GetAddedElementIds());
+        }
+
+
+        private void RenameViews()
+        {
+            var viewplanElems = new List<View>();
+            var viewCatId = new ElementId(BuiltInCategory.OST_Views);
+
+            if (NewIds == null)
+            {
+                MessageBox.Show("The Ids of The New Views Were not Found", "Returned Ids Error");
+                return;
+            }
+
+            // get elements from new ids, if category = a view add to list
+            foreach (var e in NewIds)
+            {
+                var temp = Doc.GetElement(e);
+
+                if (temp.Category == null)
+                {
+                    continue;
+                }
+
+
+                if (temp.Category.Id == viewCatId)
+                {
+                    //MessageBox.Show(temp.Name);
+                    
+                    viewplanElems.Add(temp as View);
+
+                }
+            }
+
+            // this reorder is needed as the iteration is dependant on consecutive items
+            var sortedVpElems = viewplanElems.OrderBy(e => e.Name).ToList();
+
+            using (Transaction tran = new Transaction(Doc))
+            {
+                tran.Start("Renamed Views");
+
+                for (var i = 0; i < sortedVpElems.Count; i++)
+                {
+                    var elem = sortedVpElems[i];
+                    // Genlevel is the generated level that the view was created from. used this to rename
+                    var levName = elem.GenLevel.Name;
+
+                    // using the modulo operator to reset collection count once the max item as been reached.
+                    // This must be paired with the ordered list element names as it is processed consecutively.
+                    var index2 = i % SelectedViewTypes.Count;
+
+                    var viewType = SelectedViewTypes[index2];
+
+                    if (viewType.ViewType.Equals("Working"))
+                    {
+                        elem.Name = levName + " - " + viewType.ViewType;
+
+                    }
+                    else
+                    {
+                        elem.Name = levName + " - " + "Sheet_" +viewType.ViewType;
+                    }
+
+
+
+                }
+                tran.Commit();
+            }
+
+
+
+
+            //MessageBox.Show(viewTypes.ViewType)
+            //var simpF = new SimpleForm(viewTypes);
+            //simpF.Show();
+
+        }
+
+        private void CreateDependentViews()
+        {
+            var scopeBoxCol = new FilteredElementCollector(Doc)
+                .OfCategory(BuiltInCategory.OST_VolumeOfInterest)
+                .Where(e => e.Name.Contains("ScopeBox_"))
+                .ToList();
+
+
+            if (scopeBoxCol.Count == 0)
+            {
+                MessageBox.Show("No Scopeboxes Found\nPlease Follow Naming Convention: ScopeBox_##");
+                return;
+            }
+
+
+
+            //foreach (var s in scopeBoxCol)
+            //{
+            //    MessageBox.Show(s.Name);
+            //}
+            //var simpF = new SimpleForm(scopeBoxCol);
+            //simpF.Show();
+
+
+        }
+
+
+        #endregion
 
 
         #region Create View Templates
@@ -339,6 +488,7 @@ namespace VDC_App
 
 
         }
+
         #endregion
 
 

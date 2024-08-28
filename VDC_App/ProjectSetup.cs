@@ -184,6 +184,19 @@ public class LevelsElevations
     }
 }
 
+// class for populating datagrid view type objects
+public class ViewTypes
+{
+    public string ViewType { get; set; }
+
+    //public ViewTypes(string viewType)
+    //{
+    //    ViewType = viewType;
+    //}
+
+
+}
+
 public class collector
 {
     public Document Doc { get; set; }
@@ -299,7 +312,7 @@ public class UserSelectedItems
     {
         DataGrid = dataGrid;
     }
-    public List<LevelsElevations> ReturnSelectedItems()
+    public List<LevelsElevations> SelectedLevels()
     {
         var levelsInfo = new List<LevelsElevations>();
         foreach (var i in DataGrid.SelectedItems)
@@ -312,6 +325,16 @@ public class UserSelectedItems
 
         }
         return levelsInfo;
+    }
+
+    public List<ViewTypes> SelectedViewTypes()
+    {
+        var viewTypes = new List<ViewTypes>();
+        foreach (var t in DataGrid.SelectedItems)
+        {
+            viewTypes.Add(t as ViewTypes);
+        }
+        return viewTypes;
     }
 }
 
