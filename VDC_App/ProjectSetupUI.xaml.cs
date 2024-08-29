@@ -33,6 +33,7 @@ namespace VDC_App
 
         private List<LevelsElevations> UserSelected;
         private List<ElementId> NewIds;
+        private List<ElementId> CreatedViewIds;
         private List<ViewTypes> SelectedViewTypes;
 
 
@@ -40,7 +41,6 @@ namespace VDC_App
         {
             Doc = doc;
             App = app;
-
             InitializeComponent();
             PopulateLevels();
             PopulateViewTypes();
@@ -160,8 +160,8 @@ namespace VDC_App
                     return;
                 }
 
-                //CreateViews();
-                //RenameViews();
+                CreateViews();
+                RenameViews();
                 CreateDependentViews();
 
             }
@@ -191,6 +191,7 @@ namespace VDC_App
                 return;
             }
 
+            
             SelectedViewTypes = new UserSelectedItems(ViewTypeSetup).SelectedViewTypes();
             if (SelectedViewTypes.Count == 0)
             {
@@ -198,8 +199,25 @@ namespace VDC_App
                 return;
             }
 
+            // checks for the view categories 
+            // Need _View Template View as a reference in central
+            var categoryCheck = new collector(Doc, "_view templates").GetViewsList();
+            if (categoryCheck.Count == 0)
+            {
+                MessageBox.Show("Missing _View Templates View");
+                MessageBox.Show(categoryCheck.Count.ToString());
 
+                return;
+            }
 
+            foreach (var e in categoryCheck)
+            {
+                if (e.LookupParameter("View Category") == null | e.LookupParameter("View SubCategory") == null)
+                {
+                    MessageBox.Show("View Category/Sub Category Parameters are missing.\nPlease Add Them To Views/Sheets", "View Category Error");
+                    return;
+                }
+            }
 
 
             NewIds = new List<ElementId>();
@@ -224,9 +242,6 @@ namespace VDC_App
                         i++;
                     }
 
-
-
-
                 }
 
                 t.Commit();
@@ -250,6 +265,7 @@ namespace VDC_App
         private void RenameViews()
         {
             var viewplanElems = new List<View>();
+            CreatedViewIds = new List<ElementId>();
             var viewCatId = new ElementId(BuiltInCategory.OST_Views);
 
             if (NewIds == null)
@@ -274,9 +290,11 @@ namespace VDC_App
                     //MessageBox.Show(temp.Name);
                     
                     viewplanElems.Add(temp as View);
-
+                    CreatedViewIds.Add(e);
                 }
             }
+
+            
 
             // this reorder is needed as the iteration is dependant on consecutive items
             var sortedVpElems = viewplanElems.OrderBy(e => e.Name).ToList();
@@ -297,6 +315,7 @@ namespace VDC_App
 
                     var viewType = SelectedViewTypes[index2];
 
+                    // control to isolate non sheet views
                     if (viewType.ViewType.Equals("Working"))
                     {
                         elem.Name = levName + " - " + viewType.ViewType;
@@ -324,25 +343,74 @@ namespace VDC_App
 
         private void CreateDependentViews()
         {
+            // get all vdc scope boxes in project
             var scopeBoxCol = new FilteredElementCollector(Doc)
                 .OfCategory(BuiltInCategory.OST_VolumeOfInterest)
                 .Where(e => e.Name.Contains("ScopeBox_"))
                 .ToList();
 
-
+            // null checking
             if (scopeBoxCol.Count == 0)
             {
-                MessageBox.Show("No Scopeboxes Found\nPlease Follow Naming Convention: ScopeBox_##");
+                MessageBox.Show("No Scopeboxes Found\nPlease add Scopeboxes or\nPlease Follow Naming Convention: ScopeBox_##");
                 return;
             }
 
+            // this returns all the newly created views with "sheet" in the name
+            var sheetViews = new List<View>();
+            foreach (var e in CreatedViewIds)
+            {
+                var temp = Doc.GetElement(e);
+                if (temp.Name.ToLower().Contains("sheet_"))
+                {
+                    sheetViews.Add(temp as View);
+                }
+            }
 
+
+
+            using (Transaction tran = new Transaction(Doc))
+            {
+                tran.Start("Duplicate Views");
+                foreach (var e in sheetViews)
+                {
+                    // add the Annotation value to v cat parameter
+                    e.LookupParameter("View Category").Set("ANNOTATION");
+                    
+                    // string manipulation to return the annotation view type
+                    // used this name as the subcategory
+                    var vName = e.Name;
+                    var sbView = new StringBuilder(vName);
+                    var indexEnd = vName.LastIndexOf("_") + 1;
+                    var sheetType = sbView.Remove(0, indexEnd).ToString();
+
+                    // set sub cat to name of view type
+                    e.LookupParameter("View SubCategory").Set(sheetType);
+
+                }
+
+                foreach (var e in sheetViews)
+                {
+                    var i = 0;
+                    while (i < scopeBoxCol.Count)
+                    {
+                        e.Duplicate(ViewDuplicateOption.AsDependent);
+
+                        i++;
+                    }
+                }
+                tran.Commit();
+            }
+
+
+
+            // View Category Parameters checking
 
             //foreach (var s in scopeBoxCol)
             //{
             //    MessageBox.Show(s.Name);
             //}
-            //var simpF = new SimpleForm(scopeBoxCol);
+            //var simpF = new SimpleForm(sheetIds);
             //simpF.Show();
 
 
