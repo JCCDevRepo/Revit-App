@@ -102,6 +102,7 @@ namespace VDC_App
             var viewsList = new List<ViewTypes>
             {
                 new ViewTypes { ViewType = "Working"},
+                new ViewTypes { ViewType = "RCP"},
                 new ViewTypes { ViewType = "ShopDrawings"},
                 new ViewTypes { ViewType = "Sleeving"},
                 new ViewTypes { ViewType = "AccessPanels"},
@@ -112,7 +113,7 @@ namespace VDC_App
                 new ViewTypes { ViewType = "Risers"},
                 new ViewTypes { ViewType = "Sketches"},
                 new ViewTypes { ViewType = "WallPens"},
-                new ViewTypes { ViewType = "Custom"},
+                //new ViewTypes { ViewType = "Custom"},
 
             };
 
@@ -185,9 +186,13 @@ namespace VDC_App
                 .OfClass(typeof(ViewFamilyType))
                 .Where(f => f.Name.Equals("-Working")).FirstOrDefault();
 
-            if (viewFamilyCol == null)
+            var viewFamilyRcpCol = new FilteredElementCollector(Doc)
+                .OfClass(typeof(ViewFamilyType))
+                .Where(f => f.Name.Equals("Ceiling Plan")).FirstOrDefault();
+
+            if (viewFamilyCol == null | viewFamilyRcpCol == null)
             {
-                MessageBox.Show("-Working View Family Type Is Missing");
+                MessageBox.Show("View Family Type Is Missing For AF or RCP");
                 return;
             }
 
@@ -210,6 +215,7 @@ namespace VDC_App
                 return;
             }
 
+            // check for view category/sub category parameter
             foreach (var e in categoryCheck)
             {
                 if (e.LookupParameter("View Category") == null | e.LookupParameter("View SubCategory") == null)
@@ -232,12 +238,20 @@ namespace VDC_App
                 //simpform.Show();
                 foreach (var l in UserSelected)
                 {
-                    var viewPlanElement = Doc.GetElement(l.Id) as ViewPlan;
+                    // if the user selects an RCP (different plan type), use the rcp view family
                     var i = 0;
                     while (i < SelectedViewTypes.Count)
                     {
+                        if (SelectedViewTypes[i].ViewType.Contains("RCP"))
+                        {
+                            ViewPlan.Create(Doc, viewFamilyRcpCol.Id, l.Id);
 
-                        ViewPlan.Create(Doc, viewFamilyCol.Id, l.Id);
+                        }
+                        else
+                        {
+                            ViewPlan.Create(Doc, viewFamilyCol.Id, l.Id);
+
+                        }
 
                         i++;
                     }
@@ -318,12 +332,17 @@ namespace VDC_App
                     // control to isolate non sheet views
                     if (viewType.ViewType.Equals("Working"))
                     {
-                        elem.Name = levName + " - " + viewType.ViewType;
+                        //elem.Name = levName + " - " + viewType.ViewType;
+                        elem.Name = levName;
 
+                    }
+                    else if (viewType.ViewType.Equals("RCP"))
+                    {
+                        elem.Name = levName + "_" + "RCP";
                     }
                     else
                     {
-                        elem.Name = levName + " - " + "Sheet_" +viewType.ViewType;
+                        elem.Name = levName + " - " + "Sheet_" +viewType.ViewType + " - 0";
                     }
 
 
@@ -358,6 +377,7 @@ namespace VDC_App
 
             // this returns all the newly created views with "sheet" in the name
             var sheetViews = new List<View>();
+            var workingView = new List<View>();
             foreach (var e in CreatedViewIds)
             {
                 var temp = Doc.GetElement(e);
@@ -365,13 +385,18 @@ namespace VDC_App
                 {
                     sheetViews.Add(temp as View);
                 }
+                else
+                {
+                    workingView.Add(temp as View);
+                }
+
             }
 
 
 
             using (Transaction tran = new Transaction(Doc))
             {
-                tran.Start("Duplicate Views");
+                tran.Start("Create Dependent Views - Apply Cat");
                 foreach (var e in sheetViews)
                 {
                     // add the Annotation value to v cat parameter
@@ -382,10 +407,29 @@ namespace VDC_App
                     var vName = e.Name;
                     var sbView = new StringBuilder(vName);
                     var indexEnd = vName.LastIndexOf("_") + 1;
-                    var sheetType = sbView.Remove(0, indexEnd).ToString();
-
+                    var sheetType = sbView.Remove(0, indexEnd).Replace("- 0", "").ToString();
+                    //var test = sheetType.Replace("- 0", "");
                     // set sub cat to name of view type
                     e.LookupParameter("View SubCategory").Set(sheetType);
+
+                }
+
+                // add categories to working views
+                foreach (var e in  workingView)
+                {
+                    e.LookupParameter("View Category").Set("_WORKING");
+
+                    if (e.Name.Contains("RCP"))
+                    {
+                        e.LookupParameter("View SubCategory").Set("RCP");
+
+                    }
+                    else
+                    {
+                        e.LookupParameter("View SubCategory").Set("Coordination");
+
+                    }
+
 
                 }
 
@@ -399,6 +443,24 @@ namespace VDC_App
                         i++;
                     }
                 }
+
+                var dependView = new collector(Doc, "- dependent").GetViewsList();
+
+                foreach (var e in dependView)
+                {
+                    var sbView = new StringBuilder(e.Name);
+                    sbView.Replace("- 0 - Dependent", "-");
+                    //MessageBox.Show(sbView.ToString());
+
+                    e.Name = sbView.ToString();
+
+                }
+
+                //var simpF = new SimpleForm(dependView);
+                //simpF.Show();
+
+
+
                 tran.Commit();
             }
 
