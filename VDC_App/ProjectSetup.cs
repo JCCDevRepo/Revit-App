@@ -340,3 +340,40 @@ public class UserSelectedItems
     }
 }
 
+public class ViewsFromIds
+{
+    private List<ElementId> ViewIds { get; set; }
+    private Document Document { get; set; }
+    public ViewsFromIds(Document doc , List<ElementId> viewIds)
+    {
+        Document = doc;
+        ViewIds = viewIds;
+    }
+
+    public List<View> GetViews()
+    {
+        // get elements from new ids, if category = a view add to list
+        var viewCatId = new ElementId(BuiltInCategory.OST_Views);
+        var viewplanElems = new List<View>();
+
+        foreach (var e in ViewIds)
+        {
+            var temp = Document.GetElement(e);
+
+            if (temp.Category == null)
+            {
+                continue;
+            }
+
+
+            if (temp.Category.Id == viewCatId)
+            {
+                viewplanElems.Add(temp as View);
+                //newViewIds.Add(e);
+            }
+        }
+        return viewplanElems;
+    }
+}
+
+

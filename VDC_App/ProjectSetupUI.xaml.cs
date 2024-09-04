@@ -32,8 +32,9 @@ namespace VDC_App
         //private DocumentChangedEventArgs DocumentChangedEventArgs;
 
         private List<LevelsElevations> UserSelected;
-        private List<ElementId> NewIds;
+        private List<ElementId> NewViewIds;
         private List<ElementId> CreatedViewIds;
+        private List<ElementId> NewViewRangeIds;
         private List<ViewTypes> SelectedViewTypes;
 
 
@@ -98,12 +99,12 @@ namespace VDC_App
 
         private void PopulateViewTypes()
         {
-            //var types = new List<string> { "Working", "ShopDrawings", "Sleeving", "AccessPanels", "BeamPens", "Hangers", "PadDrawings", "PointsLoad", "Risers", "Sketches", "WallPens", "Custom" };
+            // Method to display view type objects
             var viewsList = new List<ViewTypes>
             {
                 new ViewTypes { ViewType = "Working"},
                 new ViewTypes { ViewType = "RCP"},
-                new ViewTypes { ViewType = "ShopDrawings"},
+                new ViewTypes { ViewType = "ShopDrawing"},
                 new ViewTypes { ViewType = "Sleeving"},
                 new ViewTypes { ViewType = "AccessPanels"},
                 new ViewTypes { ViewType = "BeamPens"},
@@ -125,7 +126,7 @@ namespace VDC_App
             }
         }
 
-        private void vtButton_Click(object sender, RoutedEventArgs e)
+        private void VRangeButton_Click(object sender, RoutedEventArgs e)
         {
     
             UserSelected = new UserSelectedItems(ViewRangeSetup).SelectedLevels();
@@ -146,6 +147,11 @@ namespace VDC_App
 
 
             //this.Close();
+        }
+
+        private void VTemplateButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         private void viewsButton_Click(object sender, RoutedEventArgs e)
@@ -226,7 +232,7 @@ namespace VDC_App
             }
 
 
-            NewIds = new List<ElementId>();
+            NewViewIds = new List<ElementId>();
             // event that returns the newly created element ids
             App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(OnDocumentChanged);
 
@@ -265,50 +271,36 @@ namespace VDC_App
 
 
 
-            //var simpF = new SimpleForm(NewIds);
+            //var simpF = new SimpleForm(NewViewIds);
             //simpF.Show();
         }
 
         private void OnDocumentChanged(object sender, DocumentChangedEventArgs e)
         {
             //MessageBox.Show(i.ToString());
-            NewIds.AddRange(e.GetAddedElementIds());
+            NewViewIds.AddRange(e.GetAddedElementIds());
         }
 
 
         private void RenameViews()
         {
-            var viewplanElems = new List<View>();
-            CreatedViewIds = new List<ElementId>();
-            var viewCatId = new ElementId(BuiltInCategory.OST_Views);
+            //CreatedViewIds = new List<ElementId>();
+            //var viewCatId = new ElementId(BuiltInCategory.OST_Views);
 
-            if (NewIds == null)
+            if (NewViewIds == null)
             {
                 MessageBox.Show("The Ids of The New Views Were not Found", "Returned Ids Error");
                 return;
             }
 
-            // get elements from new ids, if category = a view add to list
-            foreach (var e in NewIds)
-            {
-                var temp = Doc.GetElement(e);
+            var viewplanElems = new List<View>();
 
-                if (temp.Category == null)
-                {
-                    continue;
-                }
+            var getNewView = new ViewsFromIds(Doc, NewViewIds);
 
+            viewplanElems = getNewView.GetViews();
 
-                if (temp.Category.Id == viewCatId)
-                {
-                    //MessageBox.Show(temp.Name);
-                    
-                    viewplanElems.Add(temp as View);
-                    CreatedViewIds.Add(e);
-                }
-            }
-
-            
+            CreatedViewIds = getNewView.GetViews()
+                .Select(e => e.Id).ToList();
 
             // this reorder is needed as the iteration is dependant on consecutive items
             var sortedVpElems = viewplanElems.OrderBy(e => e.Name).ToList();
@@ -487,6 +479,9 @@ namespace VDC_App
         {
             try
             {
+                NewViewRangeIds = new List<ElementId>();
+                App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(ViewRangeTemplateChanged);
+
                 using (Transaction t = new Transaction(Doc))
                 {
 
@@ -528,9 +523,9 @@ namespace VDC_App
                         //vr.SetLevelId(PlanViewPlane.ViewDepthPlane, e.Id);
                         //vToViewPlan.SetViewRange(vr);
 
-
-                        vr.SetOffset(PlanViewPlane.CutPlane, e.ViewRange);
-                        vr.SetOffset(PlanViewPlane.TopClipPlane, e.ViewRange);
+                        // .083 is approximately 1 inch
+                        vr.SetOffset(PlanViewPlane.CutPlane, e.ViewRange - 0.083333333);
+                        vr.SetOffset(PlanViewPlane.TopClipPlane, e.ViewRange - 0.083333333);
 
                         vToViewPlan.SetViewRange(vr);
 
@@ -569,14 +564,29 @@ namespace VDC_App
 
 
                 }
+
+                App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(ViewRangeTemplateChanged);
+
+
+                var simp = new SimpleForm(NewViewRangeIds);
+                simp.ShowDialog();
+
             }
             catch (Exception ex)
             {
                 TaskDialog.Show("Error Detected", ex.ToString());
 
             }
-            
+
         }
+
+        private void ViewRangeTemplateChanged(object sender, DocumentChangedEventArgs e)
+        {
+            MessageBox.Show(e.ToString());
+            NewViewRangeIds.AddRange(e.GetAddedElementIds());
+
+        }
+
 
         private void RenameViewTemplates()
         {
@@ -618,6 +628,7 @@ namespace VDC_App
 
 
         }
+
 
         #endregion
 

@@ -92,7 +92,8 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <Button Grid.Row="1" Grid.Column="1" Margin="38,0,206,50" Name="vtButton" Click="vtButton_Click">Create View Templates</Button>
+                    <Button Grid.Row="1" Grid.Column="1" Margin="38,0,206,50" Name="vRangeButton" Click="VRangeButton_Click">Create View Range Templates</Button>
+                    <Button Grid.Row="1" Grid.Column="1" Margin="224,2,20,48" Name="vTemplateButton" Click="VTemplateButton_Click">Create View Templates</Button>
                 </Grid>
             </TabItem>
         </TabControl>
