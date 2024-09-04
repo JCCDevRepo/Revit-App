@@ -29,13 +29,13 @@ namespace VDC_App
     {
         private Document Doc;
         private Application App;
-        //private DocumentChangedEventArgs DocumentChangedEventArgs;
 
         private List<LevelsElevations> UserSelected;
         private List<ElementId> NewViewIds;
         private List<ElementId> CreatedViewIds;
         private List<ElementId> NewViewRangeIds;
         private List<ViewTypes> SelectedViewTypes;
+        private List<ViewTypes> ViewTypes;
 
 
         public ProjectSetupUI(Document doc, Application app)
@@ -110,7 +110,7 @@ namespace VDC_App
                 new ViewTypes { ViewType = "BeamPens"},
                 new ViewTypes { ViewType = "Hangers"},
                 new ViewTypes { ViewType = "PadDrawings"},
-                new ViewTypes { ViewType = "PointLoad"},
+                new ViewTypes { ViewType = "PointLoads"},
                 new ViewTypes { ViewType = "Risers"},
                 new ViewTypes { ViewType = "Sketches"},
                 new ViewTypes { ViewType = "WallPens"},
@@ -124,35 +124,19 @@ namespace VDC_App
                 ViewTypeSetup.Items.Add(v);
 
             }
+
+            ViewTypes = viewsList;
         }
 
-        private void VRangeButton_Click(object sender, RoutedEventArgs e)
-        {
-    
-            UserSelected = new UserSelectedItems(ViewRangeSetup).SelectedLevels();
-
-            if(UserSelected.Count == 0)
-            {
-                MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
-            }
-
-            //var simpF = new SimpleForm(test);
-            //simpF.Show();
 
 
 
 
 
-            CreateViewTemplates();
 
 
-            //this.Close();
-        }
 
-        private void VTemplateButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
+        #region Create Views
 
         private void viewsButton_Click(object sender, RoutedEventArgs e)
         {
@@ -182,9 +166,6 @@ namespace VDC_App
 
         }
 
-
-
-        #region Create Views
         private void CreateViews()
         {
             // get the view family type of "-working"
@@ -334,7 +315,7 @@ namespace VDC_App
                     }
                     else
                     {
-                        elem.Name = levName + " - " + "Sheet_" +viewType.ViewType + " - 0";
+                        elem.Name = levName + " - " + "Sheet_" + viewType.ViewType + " - 0";
                     }
 
 
@@ -474,8 +455,33 @@ namespace VDC_App
         #endregion
 
 
-        #region Create View Templates
-        private void CreateViewTemplates()
+
+        #region Create View Range Templates
+
+        private void VRangeButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            UserSelected = new UserSelectedItems(ViewRangeSetup).SelectedLevels();
+
+            if (UserSelected.Count == 0)
+            {
+                MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
+            }
+
+            //var simpF = new SimpleForm(test);
+            //simpF.Show();
+
+
+
+
+
+            CreateViewRangeTemplates();
+
+
+            //this.Close();
+        }
+
+        private void CreateViewRangeTemplates()
         {
             try
             {
@@ -488,8 +494,13 @@ namespace VDC_App
                     t.Start("Create View Template");
 
 
+                    var viewRangeCatId = new List<ElementId>
+                    {
+                        new ElementId(BuiltInParameter.PLAN_VIEW_RANGE)
 
-                    var paramList = new EditViewTemplate(Doc);
+                    };
+
+                    var paramList = new EditViewTemplate(Doc, viewRangeCatId);
                     var turnOffList = paramList.TemplateCreationInfo();
                     var refView = paramList.View;
                     var vToViewPlan = refView as ViewPlan;
@@ -503,12 +514,12 @@ namespace VDC_App
                         var levName = levElement.Name;
                         var vrInput = e.ViewRange;
 
-                        var templatesList = new collector(Doc, "vdc_viewrange").GetTemplatesList()
+                        var templatesChecking = new collector(Doc, "vdc_viewrange").GetTemplatesList()
                             .Where(i => i.Name.Contains(levName)).FirstOrDefault();
                         //MessageBox.Show(templatesList.ToString());
 
 
-                        if ( templatesList != null )
+                        if ( templatesChecking != null )
                         {
                             MessageBox.Show($"Duplicate Template detected: {levName}\nTemplate Creation Skipped");
                             continue;
@@ -568,8 +579,8 @@ namespace VDC_App
                 App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(ViewRangeTemplateChanged);
 
 
-                var simp = new SimpleForm(NewViewRangeIds);
-                simp.ShowDialog();
+                //var simp = new SimpleForm(NewViewRangeIds);
+                //simp.ShowDialog();
 
             }
             catch (Exception ex)
@@ -582,7 +593,7 @@ namespace VDC_App
 
         private void ViewRangeTemplateChanged(object sender, DocumentChangedEventArgs e)
         {
-            MessageBox.Show(e.ToString());
+            
             NewViewRangeIds.AddRange(e.GetAddedElementIds());
 
         }
@@ -590,7 +601,7 @@ namespace VDC_App
 
         private void RenameViewTemplates()
         {
-
+            // this method is needed because when templates are created, a "copy" is added to the name
             try
             {
                 var templatesList = new collector(Doc, "vdc_viewrange").GetTemplatesList()
@@ -632,6 +643,35 @@ namespace VDC_App
 
         #endregion
 
+
+        #region Create View Templates
+
+        private void VTemplateButton_Click(object sender, RoutedEventArgs e)
+        {
+            CreateViewTemplates();
+        }
+
+        private void CreateViewTemplates()
+        {
+            foreach(var v in ViewTypes)
+            {
+                //MessageBox.Show(v.ViewType);
+                var templatesChecking = new collector(Doc, v.ViewType.ToLower()).GetTemplatesList()
+                    .FirstOrDefault();
+                //MessageBox.Show(templatesList.ToString());
+
+
+                //if (templatesChecking != null)
+                //{
+                //    MessageBox.Show($"Duplicate Template detected: {v.ViewType}\nTemplate Creation Skipped");
+                //    continue;
+                //}
+
+
+            }
+        }
+
+        #endregion
 
     }
 

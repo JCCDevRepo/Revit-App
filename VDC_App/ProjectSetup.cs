@@ -252,20 +252,16 @@ public class collector
 
 public class EditViewTemplate
 {
-    public Document Doc { get; set; }
+    private Document Doc { get; set; }
     public View View { get; set; }
+    public List<ElementId> ExcludedIds { get; set; }
 
-    public List<ElementId> LevelId { get; set; }
-    public EditViewTemplate(Document doc)
+    public EditViewTemplate(Document doc, List<ElementId> exludeIds)
     {
         Doc = doc;
+        ExcludedIds = exludeIds;
     }
 
-    public EditViewTemplate(Document doc, List<ElementId> levelId)
-    {
-        Doc = doc;
-        LevelId = levelId;
-    }
 
     public List<ElementId> TemplateCreationInfo()
     {
@@ -283,15 +279,18 @@ public class EditViewTemplate
 
 
         // ids for View category, subcategory and assign coordinator name (do not want to be included in template) 
-        var viewRangeId = new ElementId(BuiltInParameter.PLAN_VIEW_RANGE);
+        var excludedList = ExcludedIds;
 
         var viewParams = new List<ElementId>();
 
         foreach (var parameter in viewTP.GetTemplateParameterIds())
         {
             // skip the viewrangeid (how it works is: id exluded = leave the checkbox turned on)
-            if (parameter == viewRangeId)
+            if (ExcludedIds.Contains(parameter))
+            {
                 continue;
+
+            }
 
             viewParams.Add(parameter);
 
