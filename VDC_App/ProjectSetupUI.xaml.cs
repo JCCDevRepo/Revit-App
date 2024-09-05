@@ -191,6 +191,18 @@ namespace VDC_App
                 return;
             }
 
+            //var viewDuplicateCheck = new FilteredElementCollector(Doc)
+            //    .Where(e => e.Name.Contains("_Sheet"))
+            //    .Where(e => e.LookupParameter("View Category").Equals("ANNOTATION"))
+            //    .ToList();
+
+            //foreach (var e in viewDuplicateCheck)
+            //{
+            //    if (e.Name.Contains())
+            //}
+
+
+
             // checks for the view categories 
             // Need _View Template View as a reference in central
             var categoryCheck = new collector(Doc, "_view templates").GetViewsList();
@@ -653,22 +665,91 @@ namespace VDC_App
 
         private void CreateViewTemplates()
         {
-            foreach(var v in ViewTypes)
+            //MessageBox.Show(v.ViewType);
+            //var templatesChecking = new collector(Doc, v.ViewType.ToLower()).GetTemplatesList()
+            //    .FirstOrDefault();
+            //MessageBox.Show(templatesList.ToString());
+
+
+            //if (templatesChecking != null)
+            //{
+            //    MessageBox.Show($"Duplicate Template detected: {v.ViewType}\nTemplate Creation Skipped");
+            //    continue;
+            //}
+
+            var excludeIdsList = new List<ElementId>
+                {
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_MODEL),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_ANNOTATION),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_ANALYTICAL_MODEL),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_IMPORT),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_FILTERS),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_WORKSETS),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_RVT_LINKS),
+                    new ElementId(BuiltInParameter.VIEW_SCALE_PULLDOWN_IMPERIAL)
+
+                };
+
+
+
+
+            using (Transaction t = new Transaction(Doc))
             {
-                //MessageBox.Show(v.ViewType);
-                var templatesChecking = new collector(Doc, v.ViewType.ToLower()).GetTemplatesList()
-                    .FirstOrDefault();
-                //MessageBox.Show(templatesList.ToString());
+                t.Start("Create View Templates");
 
 
-                //if (templatesChecking != null)
+                //var simp = new SimpleForm(ViewTypes);
+                //simp.ShowDialog();
+
+                //for (int i = 0; i < ViewTypes.Count; i++)
                 //{
-                //    MessageBox.Show($"Duplicate Template detected: {v.ViewType}\nTemplate Creation Skipped");
-                //    continue;
+
+
                 //}
 
 
+
+                foreach (var e in ViewTypes)
+                {
+                    var vRangeId = new ElementId(BuiltInParameter.PLAN_VIEW_RANGE);
+                    if (e.ViewType == "Sleeving")
+                    {
+                        excludeIdsList.Add(vRangeId);
+                    }
+                    else
+                    {
+                        excludeIdsList.Remove(vRangeId);
+                    }
+
+                    var templateInfo = new EditViewTemplate(Doc, excludeIdsList);
+                    var returnedExcludeIds = templateInfo.TemplateCreationInfo();
+                    var refView = templateInfo.View;
+
+                    var ogName = refView.Name;
+
+                    if (e.ViewType == "Working" | e.ViewType == "RCP")
+                    {
+                        refView.Name = "VDC_Template_" + e.ViewType;
+
+                    }
+                    else
+                    {
+                        refView.Name = "VDC_Template_Sheet_" + e.ViewType;
+
+                    }
+
+
+
+                    refView.SetNonControlledTemplateParameterIds(returnedExcludeIds);
+                    refView.CreateViewTemplate();
+
+                    Doc.Regenerate();
+                    refView.Name = ogName;
+                }
+
+                t.Commit();
             }
+
         }
 
         #endregion

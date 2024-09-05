@@ -279,7 +279,7 @@ public class EditViewTemplate
 
 
         // ids for View category, subcategory and assign coordinator name (do not want to be included in template) 
-        var excludedList = ExcludedIds;
+        //var excludedList = ExcludedIds;
 
         var viewParams = new List<ElementId>();
 
