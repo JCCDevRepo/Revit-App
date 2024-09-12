@@ -19,6 +19,7 @@ using System.Windows.Shapes;
 using Application = Autodesk.Revit.ApplicationServices.Application;
 using Autodesk.Revit.DB.Events;
 using System.Drawing;
+using System.IO;
 
 namespace VDC_App
 {
@@ -31,10 +32,14 @@ namespace VDC_App
         private Application App;
 
         private List<LevelsElevations> UserSelected;
+        private List<ViewTypes> SelectedViewTypes;
+        private List<ViewTypes> SelectedTemplateType;
+
         private List<ElementId> NewViewIds;
         private List<ElementId> CreatedViewIds;
         private List<ElementId> NewViewRangeIds;
-        private List<ViewTypes> SelectedViewTypes;
+        private List<ElementId> NewViewTemplateIds;
+
         private List<ViewTypes> ViewTypes;
 
 
@@ -122,7 +127,7 @@ namespace VDC_App
             {
                 //ViewTypeSetup.Items.Add(new { ViewTypes = v});
                 ViewTypeSetup.Items.Add(v);
-
+                ApplyTemplateType.Items.Add(v);
             }
 
             ViewTypes = viewsList;
@@ -498,7 +503,7 @@ namespace VDC_App
             try
             {
                 NewViewRangeIds = new List<ElementId>();
-                App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(ViewRangeTemplateChanged);
+                App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(OnViewRangeTemplateChanged);
 
                 using (Transaction t = new Transaction(Doc))
                 {
@@ -524,7 +529,6 @@ namespace VDC_App
                     {
                         var levElement = Doc.GetElement(e.Id);
                         var levName = levElement.Name;
-                        var vrInput = e.ViewRange;
 
                         var templatesChecking = new collector(Doc, "vdc_viewrange").GetTemplatesList()
                             .Where(i => i.Name.Contains(levName)).FirstOrDefault();
@@ -588,7 +592,7 @@ namespace VDC_App
 
                 }
 
-                App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(ViewRangeTemplateChanged);
+                App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(OnViewRangeTemplateChanged);
 
 
                 //var simp = new SimpleForm(NewViewRangeIds);
@@ -603,7 +607,7 @@ namespace VDC_App
 
         }
 
-        private void ViewRangeTemplateChanged(object sender, DocumentChangedEventArgs e)
+        private void OnViewRangeTemplateChanged(object sender, DocumentChangedEventArgs e)
         {
             
             NewViewRangeIds.AddRange(e.GetAddedElementIds());
@@ -616,12 +620,18 @@ namespace VDC_App
             // this method is needed because when templates are created, a "copy" is added to the name
             try
             {
-                var templatesList = new collector(Doc, "vdc_viewrange").GetTemplatesList()
-                    .Where(e => e.Name.Contains("Copy"));
+                // collector depends on w
+                var vRangetemplatesList = new collector(Doc, "vdc_viewrange").GetTemplatesList()
+                    .Where(e => e.Name.Contains("Copy"))
+                    .ToList();
+                var viewTemplatesList = new collector(Doc, "vdc_visibilityoverride").GetTemplatesList()
+                    .Where(e => e.Name.Contains("Copy"))
+                    .ToList();
 
-                if (templatesList != null)
+
+                if (vRangetemplatesList.Count > 0)
                 {
-                    foreach (var e in templatesList)
+                    foreach (var e in vRangetemplatesList)
                     {
                         var originalName = e.Name;
 
@@ -633,11 +643,25 @@ namespace VDC_App
                     }
 
                 }
-                else
+                else if( viewTemplatesList.Count > 0)
                 {
-                    MessageBox.Show("Template Error", "No View Range Templates Found");
 
+                    foreach (var e in viewTemplatesList)
+                    {
+                        var originalName = e.Name;
+
+                        var indexOfCopy = originalName.IndexOf("Copy");
+
+                        e.Name = originalName.Remove(indexOfCopy - 1);
+                        //MessageBox.Show(e.Name);
+
+                    }
                 }
+                //else
+                //{
+                //    MessageBox.Show("Template Error", "No View Range Templates Found");
+
+                //}
 
             }
             catch 
@@ -665,30 +689,12 @@ namespace VDC_App
 
         private void CreateViewTemplates()
         {
-            //MessageBox.Show(v.ViewType);
-            //var templatesChecking = new collector(Doc, v.ViewType.ToLower()).GetTemplatesList()
-            //    .FirstOrDefault();
-            //MessageBox.Show(templatesList.ToString());
 
+            NewViewTemplateIds = new List<ElementId>();
+            // event that returns the newly created element ids
+            App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(OnViewTemplateChanged);
 
-            //if (templatesChecking != null)
-            //{
-            //    MessageBox.Show($"Duplicate Template detected: {v.ViewType}\nTemplate Creation Skipped");
-            //    continue;
-            //}
-
-            var excludeIdsList = new List<ElementId>
-                {
-                    new ElementId(BuiltInParameter.VIS_GRAPHICS_MODEL),
-                    new ElementId(BuiltInParameter.VIS_GRAPHICS_ANNOTATION),
-                    new ElementId(BuiltInParameter.VIS_GRAPHICS_ANALYTICAL_MODEL),
-                    new ElementId(BuiltInParameter.VIS_GRAPHICS_IMPORT),
-                    new ElementId(BuiltInParameter.VIS_GRAPHICS_FILTERS),
-                    new ElementId(BuiltInParameter.VIS_GRAPHICS_WORKSETS),
-                    new ElementId(BuiltInParameter.VIS_GRAPHICS_RVT_LINKS),
-                    new ElementId(BuiltInParameter.VIEW_SCALE_PULLDOWN_IMPERIAL)
-
-                };
+            // Transaction goes here
 
 
 
@@ -698,19 +704,37 @@ namespace VDC_App
                 t.Start("Create View Templates");
 
 
-                //var simp = new SimpleForm(ViewTypes);
-                //simp.ShowDialog();
+                //var simpform = new SimpleForm(ViewTypes);
+                //simpform.ShowDialog();
 
-                //for (int i = 0; i < ViewTypes.Count; i++)
-                //{
+                var excludeIdsList = new List<ElementId>
+                {
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_MODEL),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_ANNOTATION),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_ANALYTICAL_MODEL),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_IMPORT),
+                    //new ElementId(BuiltInParameter.VIS_GRAPHICS_FILTERS),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_WORKSETS),
+                    new ElementId(BuiltInParameter.VIS_GRAPHICS_RVT_LINKS),
+                    new ElementId(BuiltInParameter.VIEW_SCALE_PULLDOWN_IMPERIAL)
 
-
-                //}
-
+                };
 
 
                 foreach (var e in ViewTypes)
                 {
+                    // duplicate template checking
+                    var templatesChecking = new collector(Doc, "vdc_template").GetTemplatesList()
+                        .Where(i => i.Name.Contains(e.ViewType)).FirstOrDefault();
+
+                    if (templatesChecking != null)
+                    {
+                        //MessageBox.Show($"Duplicate Template detected: {e.ViewType}\nTemplate Creation Skipped");
+                        continue;
+                    }
+
+                    // include the view range param if view type is sleeving.
+                    // else remove needed otherwise it will be included for certain types (depends on index of sleeving)
                     var vRangeId = new ElementId(BuiltInParameter.PLAN_VIEW_RANGE);
                     if (e.ViewType == "Sleeving")
                     {
@@ -721,39 +745,223 @@ namespace VDC_App
                         excludeIdsList.Remove(vRangeId);
                     }
 
+                    // class that returns the list of ids to be excluded. also returns the reference view
                     var templateInfo = new EditViewTemplate(Doc, excludeIdsList);
                     var returnedExcludeIds = templateInfo.TemplateCreationInfo();
                     var refView = templateInfo.View;
+
 
                     var ogName = refView.Name;
 
                     if (e.ViewType == "Working" | e.ViewType == "RCP")
                     {
-                        refView.Name = "VDC_Template_" + e.ViewType;
+                        refView.Name = "VDC_VisibilityOverride_" + e.ViewType;
 
                     }
                     else
                     {
-                        refView.Name = "VDC_Template_Sheet_" + e.ViewType;
+                        refView.Name = "VDC_VisibilityOverride_Sheet_" + e.ViewType;
 
                     }
 
+                    // this sets the view range for sleeving templates as it is different from the rest
+                    if (e.ViewType == "Sleeving")
+                    {
+                        var vToViewPlan = refView as ViewPlan;
+                        var vr = vToViewPlan.GetViewRange();
+                        vr.SetOffset(PlanViewPlane.TopClipPlane, 2.0);
+                        vr.SetOffset(PlanViewPlane.CutPlane, 2.0);
+                        vr.SetOffset(PlanViewPlane.BottomClipPlane, -1.0);
+                        vr.SetOffset(PlanViewPlane.ViewDepthPlane, -1.0);
+                        vToViewPlan.SetViewRange(vr);
 
+                        refView.SetNonControlledTemplateParameterIds(returnedExcludeIds);
+                        refView.CreateViewTemplate();
 
-                    refView.SetNonControlledTemplateParameterIds(returnedExcludeIds);
-                    refView.CreateViewTemplate();
+                        // resets the reference view's ranges
+                        Doc.Regenerate();
+                        vr.SetOffset(PlanViewPlane.BottomClipPlane, 0.0);
+                        vr.SetOffset(PlanViewPlane.ViewDepthPlane, 0.0);
+                        vToViewPlan.SetViewRange(vr);
+                        refView.Name = ogName;
+                    }
+                    else
+                    {
+                        refView.SetNonControlledTemplateParameterIds(returnedExcludeIds);
+                        refView.CreateViewTemplate();
 
-                    Doc.Regenerate();
-                    refView.Name = ogName;
+                        Doc.Regenerate();
+                        refView.Name = ogName;
+                    }
+
                 }
 
+                RenameViewTemplates();
+
                 t.Commit();
+                App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(OnViewTemplateChanged);
+
             }
 
         }
-
+        private void OnViewTemplateChanged(object sender, DocumentChangedEventArgs e)
+        {
+            //MessageBox.Show(i.ToString());
+            NewViewTemplateIds.AddRange(e.GetAddedElementIds());
+        }
         #endregion
 
+        private void vTemplateApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedTemplateType = new UserSelectedItems(ApplyTemplateType).SelectedViewTypes();
+            if (SelectedTemplateType.Count == 0)
+            {
+                MessageBox.Show("Please Select A View Template Type", "Selection Error", MessageBoxButton.OK);
+                return;
+            }
+
+            ApplyViewTemplate();
+        }
+
+        private void ApplyViewTemplate()
+        {
+            var templateCol = new collector(Doc, "vdc_visibilityoverride").GetTemplatesList().ToList();
+
+            //var getAllViews = new collector(Doc, "")
+
+            try
+            {
+
+
+
+
+                //var simpForm = new SimpleForm(temp);
+                //simpForm.ShowDialog();
+
+                using (Transaction t = new Transaction(Doc))
+                {
+                    t.Start("Apply View Templates");
+                    foreach (var e in SelectedTemplateType)
+                    {
+
+                        switch (e.ViewType)
+                        {
+                            case "Working":
+                                {
+                                    //var viewsCol = new FilteredElementCollector(Doc)
+                                    //    .OfClass(typeof(ViewPlan))
+                                    //    //.Cast<View>()
+                                    //    .Where(i => i.LookupParameter("View Category").AsString() == "_WORKING")
+                                    //    .Where(i => i.LookupParameter("View SubCategory").AsString() == "Coordination")
+                                    //    .ToList();
+
+                                    //var getViewByCat = new collector(Doc, "Coordination").GetViewType().ToList();
+
+                                    //var workingTemplate = templateCol.Where(i => i.Name.Contains(e.ViewType)).First();
+
+                                    //foreach (var v in getViewByCat)
+                                    //{
+                                    //    //MessageBox.Show(v.Name);
+
+                                    //    v.ApplyViewTemplateParameters(workingTemplate);
+                                    //}
+
+                                    var tset = new ApplyViewTemplates(Doc, e.ViewType, templateCol);
+                                    tset.ApplyTemplates();
+
+                                    break;
+
+                                }
+                            case "RCP":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "ShopDrawing":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "Sleeving":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "AccessPanels":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "BeamPens":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "Hangers":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "PadDrawings":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "PointLoads":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "Risers":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "Sketches":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                            case "WallPens":
+                                {
+                                    //var workingCol = new collector(Doc,
+                                    MessageBox.Show(e.ViewType);
+                                    break;
+
+                                }
+                        }
+                    }
+
+                    t.Commit();
+                }
+            }
+            catch( Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
+            
+        }
     }
 
 

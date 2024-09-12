@@ -204,16 +204,19 @@ public class collector
     public Document Doc { get; set; }
     public string ViewName { get; set; }
 
+
+    public collector(Document doc)
+    {
+        Doc = doc;
+    }
+
     public collector(Document doc, string viewName)
     {
         Doc = doc;
         ViewName = viewName;
     }
 
-    public collector(Document doc)
-    {
-        Doc = doc;
-    }
+
 
     public List<View> GetViewsList()
     {
@@ -247,6 +250,16 @@ public class collector
             .SkipWhile(e => e.Name.ToLower().Contains("insertion level"))
             .ToList();
         return levelsCol;
+    }
+
+    public List<ViewPlan> GetViewType()
+    {
+        var viewsCol = new FilteredElementCollector(Doc)
+            .OfClass(typeof(ViewPlan))
+            .Cast<ViewPlan>()
+            .Where(e => e.LookupParameter("View SubCategory").AsString() == ViewName)
+            .ToList();
+        return viewsCol;
     }
 }
 
@@ -372,6 +385,49 @@ public class ViewsFromIds
             }
         }
         return viewplanElems;
+    }
+}
+
+public class ApplyViewTemplates
+{
+    private Document Document { get; set; }
+    private string ViewType { get; set; }
+    private List<View> ViewTemplates { get; set; }
+
+    public ApplyViewTemplates(Document doc, string viewType, List<View> viewTemplates)
+    {
+        Document= doc; 
+        ViewType = viewType;
+        ViewTemplates = viewTemplates;
+    }
+
+    public void ApplyTemplates()
+    {
+        var getViewByCat = new List<ViewPlan>();
+        // need to be specific for working because view name does not equal category name
+        if (ViewType == "Working")
+        {
+            getViewByCat = new collector(Document, "Coordination").GetViewType().ToList();
+
+        }
+        else
+        {
+            getViewByCat = new collector(Document, ViewType).GetViewType().ToList();
+        }
+
+        var getViewTemplate = ViewTemplates.Where(i => i.Name.Contains(ViewType)).FirstOrDefault();
+
+        if (getViewByCat.Count < 1 || getViewTemplate == null)
+        {
+            MessageBox.Show("Missing Views Or View Templates");
+            return;
+        }
+
+        foreach (var v in getViewByCat)
+        {
+
+            v.ApplyViewTemplateParameters(getViewTemplate);
+        }
     }
 }
 

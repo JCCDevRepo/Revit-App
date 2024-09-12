@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDC_App"
              mc:Ignorable="d" 
-             ResizeMode="CanResize" Title="Project Setup" Height="auto" MaxHeight="800" Width="800" 
+             ResizeMode="CanResize" Title="Project Setup" Height="900" MaxHeight="1000" Width="800" 
              KeyDown="Window_KeyDown">
                 
     <Window.Resources>
@@ -40,7 +40,7 @@
         <TextBlock Grid.Row="0" Grid.Column="2">Project Setup Form</TextBlock>
         
         
-        <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Left" Height="auto" MaxHeight="700" Width="700" Grid.RowSpan="4" Grid.ColumnSpan="3">
+        <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Left" Height="800" MaxHeight="900" Width="700" Grid.RowSpan="4" Grid.ColumnSpan="3">
             <!--Create Views Tab-->
             <TabItem Header="Create Views">
                 <Grid>
@@ -76,13 +76,17 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="100"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+
+
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="100"/>
                         <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="auto"/>
                     </Grid.ColumnDefinitions>
-                    <DataGrid Grid.Row="0" Grid.Column="1" Name="ViewRangeSetup" AutoGenerateColumns="False" CanUserSortColumns="False" RowHeaderWidth="15" CanUserResizeRows="False" Height="auto" MaxHeight="500" Width="auto" Margin="20 0 20 20" AlternationCount="2">
+                    <DataGrid Grid.Row="0" Grid.Column="1" Name="ViewRangeSetup" AutoGenerateColumns="False" CanUserSortColumns="False" RowHeaderWidth="15" CanUserResizeRows="False" Height="auto" MaxHeight="300" Width="auto" Margin="20 0 20 20" AlternationCount="2">
                        
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Level" Binding="{Binding Level}" IsReadOnly="True" Width="auto"/>
@@ -91,9 +95,16 @@
                             <!--<DataGridTextColumn Header="Id" Binding="{Binding Id}" IsReadOnly="True" Width="auto"/>-->
                         </DataGrid.Columns>
                     </DataGrid>
+                    <DataGrid Grid.Row="2" Grid.Column="1" Name="ApplyTemplateType" AutoGenerateColumns="true" CanUserSortColumns="False" RowHeaderWidth="15" CanUserResizeRows="False" Height="auto" MaxHeight="400" Width="auto" Margin="20 0 20 20" AlternationCount="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Apply Template Type" Binding="{Binding ViewType}" IsReadOnly="True" Width="auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
 
                     <Button Grid.Row="1" Grid.Column="1" Margin="38,0,206,50" Name="vRangeButton" Click="VRangeButton_Click">Create View Range Templates</Button>
                     <Button Grid.Row="1" Grid.Column="1" Margin="224,2,20,48" Name="vTemplateButton" Click="VTemplateButton_Click">Create View Templates</Button>
+                    <Button Grid.Row="3" Grid.Column="1" Margin="122,0,122,50" Name="vTemplateApplyButton" Click="vTemplateApplyButton_Click">Apply View Templates</Button>
+
                 </Grid>
             </TabItem>
         </TabControl>
