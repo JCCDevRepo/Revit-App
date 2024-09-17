@@ -78,6 +78,7 @@
                         <RowDefinition Height="100"/>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
+                        
 
 
                     </Grid.RowDefinitions>
@@ -103,8 +104,8 @@
 
                     <Button Grid.Row="1" Grid.Column="1" Margin="38,0,206,50" Name="vRangeButton" Click="VRangeButton_Click">Create View Range Templates</Button>
                     <Button Grid.Row="1" Grid.Column="1" Margin="224,2,20,48" Name="vTemplateButton" Click="VTemplateButton_Click">Create View Templates</Button>
-                    <Button Grid.Row="3" Grid.Column="1" Margin="122,0,122,50" Name="vTemplateApplyButton" Click="vTemplateApplyButton_Click">Apply View Templates</Button>
-
+                    <Button Grid.Row="3" Grid.Column="1" Margin="38,0,206,-20" Name="vTemplateApplyButton" Click="vTemplateApplyButton_Click">Apply View Templates</Button>
+                    <Button Grid.Row="3" Grid.Column="1" Margin="224,0,20,-20" Name="vRangeApplyButton" Click="vRangeApplyButton_Click">Apply View Range Templates</Button>
                 </Grid>
             </TabItem>
         </TabControl>

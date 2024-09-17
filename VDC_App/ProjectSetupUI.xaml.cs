@@ -825,16 +825,12 @@ namespace VDC_App
 
         private void ApplyViewTemplate()
         {
-            var templateCol = new collector(Doc, "vdc_visibilityoverride").GetTemplatesList().ToList();
+            var templateCol = new collector(Doc, "vdc_visibilityoverride").GetTemplatesList();
 
             //var getAllViews = new collector(Doc, "")
 
             try
             {
-
-
-
-
                 //var simpForm = new SimpleForm(temp);
                 //simpForm.ShowDialog();
 
@@ -843,113 +839,8 @@ namespace VDC_App
                     t.Start("Apply View Templates");
                     foreach (var e in SelectedTemplateType)
                     {
+                        new ApplyViewTemplates(Doc, e.ViewType, templateCol).ApplyTemplates();
 
-                        switch (e.ViewType)
-                        {
-                            case "Working":
-                                {
-                                    //var viewsCol = new FilteredElementCollector(Doc)
-                                    //    .OfClass(typeof(ViewPlan))
-                                    //    //.Cast<View>()
-                                    //    .Where(i => i.LookupParameter("View Category").AsString() == "_WORKING")
-                                    //    .Where(i => i.LookupParameter("View SubCategory").AsString() == "Coordination")
-                                    //    .ToList();
-
-                                    //var getViewByCat = new collector(Doc, "Coordination").GetViewType().ToList();
-
-                                    //var workingTemplate = templateCol.Where(i => i.Name.Contains(e.ViewType)).First();
-
-                                    //foreach (var v in getViewByCat)
-                                    //{
-                                    //    //MessageBox.Show(v.Name);
-
-                                    //    v.ApplyViewTemplateParameters(workingTemplate);
-                                    //}
-
-                                    var tset = new ApplyViewTemplates(Doc, e.ViewType, templateCol);
-                                    tset.ApplyTemplates();
-
-                                    break;
-
-                                }
-                            case "RCP":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "ShopDrawing":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "Sleeving":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "AccessPanels":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "BeamPens":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "Hangers":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "PadDrawings":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "PointLoads":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "Risers":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "Sketches":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                            case "WallPens":
-                                {
-                                    //var workingCol = new collector(Doc,
-                                    MessageBox.Show(e.ViewType);
-                                    break;
-
-                                }
-                        }
                     }
 
                     t.Commit();
@@ -961,6 +852,91 @@ namespace VDC_App
             }
             
             
+        }
+
+        private void vRangeApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedTemplateType = new UserSelectedItems(ApplyTemplateType).SelectedViewTypes();
+            if (SelectedTemplateType.Count == 0)
+            {
+                MessageBox.Show("Please Select A View Template Type", "Selection Error", MessageBoxButton.OK);
+                return;
+            }
+
+            ApplyViewRangeTemplates();
+            
+        }
+
+        private void ApplyViewRangeTemplates()
+        {
+            using (Transaction t = new Transaction(Doc))
+            {
+                t.Start("Apply View Range");
+                var templateCol = new collector(Doc, "vdc_viewrange").GetTemplatesList();
+
+
+
+                var viewsCol = new FilteredElementCollector(Doc)
+                    .OfClass(typeof(ViewPlan))
+                    .Where(e => e.LookupParameter("View SubCategory").HasValue)
+                    .Cast<ViewPlan>()
+                    .ToList();
+
+                // null check 
+                if (templateCol.Count == 0)
+                {
+                    MessageBox.Show("Please check if View Range Templates Exist");
+                    return;
+                }
+
+                if (viewsCol.Count == 0)
+                {
+                    MessageBox.Show("Please check if Views exist or View's Categories are Named Correctly.");
+                    return;
+                }
+
+                foreach (var e in SelectedTemplateType)
+                {
+                    var i = 0;
+                    while (i < viewsCol.Count)
+                    {
+                        // matches the view sub cat with the name of the selected view type.
+                        // also checks if the sheet names contain - 0 (child views are not need because they inherit)
+                        if (viewsCol[i].LookupParameter("View SubCategory").AsString() == e.ViewType & viewsCol[i].Name.Contains("- 0"))
+                        {
+
+                            //MessageBox.Show("worked");
+                            var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
+                            MessageBox.Show(viewsCol[i].Name + vrTemplate.Name);
+
+                            viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
+                        }
+                        else if (viewsCol[i].LookupParameter("View SubCategory").AsString() == "Coordination")
+                        {
+                            var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
+                            viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
+
+                        }
+                        else if (e.ViewType == "RCP")
+                        {
+                            MessageBox.Show("RCPs Do Not Need View Ranges To Be Applied");
+                        }
+                        else
+                        {
+                            MessageBox.Show($"View Subcategory did not matched the view type\n Please double check View Category Name or View Name\n" +
+                                $"{viewsCol[i].Name}\n{e.ViewType}");
+                            return;
+                        }
+
+                        i++;
+                    }
+                }
+                //var simpForm = new SimpleForm(levelsCol);
+                //simpForm.ShowDialog();
+                t.Commit();
+            }
+
+
         }
     }
 

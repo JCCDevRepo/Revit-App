@@ -229,6 +229,16 @@ public class collector
         return colList;
     }
 
+    public List<ViewPlan> GetViewType()
+    {
+        var viewsCol = new FilteredElementCollector(Doc)
+            .OfClass(typeof(ViewPlan))
+            .Cast<ViewPlan>()
+            .Where(e => e.LookupParameter("View SubCategory").AsString() == ViewName)
+            .ToList();
+        return viewsCol;
+    }
+
     public List<View> GetTemplatesList()
     {
         var templateList = new FilteredElementCollector(Doc)
@@ -252,15 +262,7 @@ public class collector
         return levelsCol;
     }
 
-    public List<ViewPlan> GetViewType()
-    {
-        var viewsCol = new FilteredElementCollector(Doc)
-            .OfClass(typeof(ViewPlan))
-            .Cast<ViewPlan>()
-            .Where(e => e.LookupParameter("View SubCategory").AsString() == ViewName)
-            .ToList();
-        return viewsCol;
-    }
+
 }
 
 public class EditViewTemplate
@@ -404,22 +406,34 @@ public class ApplyViewTemplates
     public void ApplyTemplates()
     {
         var getViewByCat = new List<ViewPlan>();
-        // need to be specific for working because view name does not equal category name
+        // need to be specific for working views because view name does not equal category name
         if (ViewType == "Working")
         {
             getViewByCat = new collector(Document, "Coordination").GetViewType().ToList();
 
         }
+        else if (ViewType == "RCP")
+        {
+            // RCP needs to separated because is it not a sheet and does not contain dependents
+            getViewByCat = new collector(Document, ViewType).GetViewType().ToList();
+
+        }
         else
         {
-            getViewByCat = new collector(Document, ViewType).GetViewType().ToList();
+            // Select only the parent views of sheets by " - 0"
+            // the children views inherit the template from the parent.
+            // children do not get process = more efficient
+            getViewByCat = new collector(Document, ViewType).GetViewType()
+                .Where(e => e.Name.Contains("- 0"))
+                .ToList();
+            
         }
 
         var getViewTemplate = ViewTemplates.Where(i => i.Name.Contains(ViewType)).FirstOrDefault();
 
         if (getViewByCat.Count < 1 || getViewTemplate == null)
         {
-            MessageBox.Show("Missing Views Or View Templates");
+            MessageBox.Show($"Missing Views Or View Templates\nAffected View: {ViewType}");
             return;
         }
 
@@ -429,6 +443,11 @@ public class ApplyViewTemplates
             v.ApplyViewTemplateParameters(getViewTemplate);
         }
     }
+    public void ApplyViewRange()
+    {
+
+    }
+
 }
 
 
