@@ -16,10 +16,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Application = Autodesk.Revit.ApplicationServices.Application;
 using Autodesk.Revit.DB.Events;
 using System.Drawing;
 using System.IO;
+using Application = Autodesk.Revit.ApplicationServices.Application;
+using MessageBox = System.Windows.MessageBox;
+using View = Autodesk.Revit.DB.View;
+
+
 
 namespace VDC_App
 {
@@ -53,7 +57,7 @@ namespace VDC_App
 
 
         }
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
@@ -96,6 +100,7 @@ namespace VDC_App
             {
                 ViewRangeSetup.Items.Add(i);
                 CreatViewsSetup.Items.Add(i);
+                SheetLevels.Items.Add(i);
             }
 
 
@@ -128,6 +133,7 @@ namespace VDC_App
                 //ViewTypeSetup.Items.Add(new { ViewTypes = v});
                 ViewTypeSetup.Items.Add(v);
                 ApplyTemplateType.Items.Add(v);
+                CreateSheetType.Items.Add(v);
             }
 
             ViewTypes = viewsList;
@@ -811,6 +817,7 @@ namespace VDC_App
         }
         #endregion
 
+        #region Apply View Templates
         private void vTemplateApplyButton_Click(object sender, RoutedEventArgs e)
         {
             SelectedTemplateType = new UserSelectedItems(ApplyTemplateType).SelectedViewTypes();
@@ -869,74 +876,152 @@ namespace VDC_App
 
         private void ApplyViewRangeTemplates()
         {
-            using (Transaction t = new Transaction(Doc))
+            try
             {
-                t.Start("Apply View Range");
-                var templateCol = new collector(Doc, "vdc_viewrange").GetTemplatesList();
-
-
-
-                var viewsCol = new FilteredElementCollector(Doc)
-                    .OfClass(typeof(ViewPlan))
-                    .Where(e => e.LookupParameter("View SubCategory").HasValue)
-                    .Cast<ViewPlan>()
-                    .ToList();
-
-                // null check 
-                if (templateCol.Count == 0)
+                using (Transaction t = new Transaction(Doc))
                 {
-                    MessageBox.Show("Please check if View Range Templates Exist");
-                    return;
-                }
+                    t.Start("Apply View Range");
 
-                if (viewsCol.Count == 0)
-                {
-                    MessageBox.Show("Please check if Views exist or View's Categories are Named Correctly.");
-                    return;
-                }
+                    var templateCol = new collector(Doc, "vdc_viewrange").GetTemplatesList();
 
-                foreach (var e in SelectedTemplateType)
-                {
-                    var i = 0;
-                    while (i < viewsCol.Count)
+                    var viewsCol = new FilteredElementCollector(Doc)
+                        .OfClass(typeof(ViewPlan))
+                        .Where(e => e.LookupParameter("View SubCategory").HasValue)
+                        .Where(e => e.LookupParameter("View Category").AsString() != "VDC")
+                        .Cast<ViewPlan>()
+                        .ToList();
+
+                    //var path = "C:\\Users\\tdang\\Desktop\\test.txt";
+                    //File.WriteAllLines(path, temp);
+
+                    // null check 
+                    if (templateCol.Count == 0)
                     {
-                        // matches the view sub cat with the name of the selected view type.
-                        // also checks if the sheet names contain - 0 (child views are not need because they inherit)
-                        if (viewsCol[i].LookupParameter("View SubCategory").AsString() == e.ViewType & viewsCol[i].Name.Contains("- 0"))
-                        {
-
-                            //MessageBox.Show("worked");
-                            var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
-                            MessageBox.Show(viewsCol[i].Name + vrTemplate.Name);
-
-                            viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
-                        }
-                        else if (viewsCol[i].LookupParameter("View SubCategory").AsString() == "Coordination")
-                        {
-                            var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
-                            viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
-
-                        }
-                        else if (e.ViewType == "RCP")
-                        {
-                            MessageBox.Show("RCPs Do Not Need View Ranges To Be Applied");
-                        }
-                        else
-                        {
-                            MessageBox.Show($"View Subcategory did not matched the view type\n Please double check View Category Name or View Name\n" +
-                                $"{viewsCol[i].Name}\n{e.ViewType}");
-                            return;
-                        }
-
-                        i++;
+                        MessageBox.Show("Please check if View Range Templates Exist");
+                        return;
                     }
+
+                    if (viewsCol.Count == 0)
+                    {
+                        MessageBox.Show("Please check if Views exist or View's Categories are Named Correctly.");
+                        return;
+                    }
+
+                    foreach (var e in SelectedTemplateType)
+                    {
+                        var i = 0;
+                        while (i < viewsCol.Count)
+                        {
+                            // matches the view sub cat with the name of the selected view type.
+                            // also checks if the sheet names contain - 0 (child views are not need because they inherit)
+                            if (viewsCol[i].LookupParameter("View SubCategory").AsString() == e.ViewType & viewsCol[i].Name.Contains("- 0"))
+                            {
+
+                                //MessageBox.Show("worked");
+                                var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
+                                MessageBox.Show(viewsCol[i].Name + vrTemplate.Name);
+
+                                viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
+                            }
+                            else if (viewsCol[i].LookupParameter("View SubCategory").AsString() == "Coordination")
+                            {
+                                var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
+                                viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
+
+                            }
+                            else if (e.ViewType == "RCP")
+                            {
+                                MessageBox.Show("RCPs Do Not Need View Ranges To Be Applied");
+                                return;
+                            }
+                            //else
+                            //{
+                            //    MessageBox.Show($"View Subcategory did not matched the view type\n Please double check View Category Name or View Name\n" +
+                            //        $"{viewsCol[i].Name}\n{e.ViewType}");
+                            //    return;
+                            //}
+
+                            i++;
+                        }
+                    }
+                    t.Commit();
                 }
-                //var simpForm = new SimpleForm(levelsCol);
-                //simpForm.ShowDialog();
-                t.Commit();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
 
+            
+        }
 
+        #endregion
+
+        private void CreateSheetsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedTemplateType = new UserSelectedItems(CreateSheetType).SelectedViewTypes();
+            if (SelectedTemplateType.Count == 0)
+            {
+                MessageBox.Show("Please Select A Sheet Type", "Selection Error", MessageBoxButton.OK);
+                return;
+            }
+
+            //return the user selected items from the UI
+            UserSelected = new UserSelectedItems(SheetLevels).SelectedLevels();
+
+            if (UserSelected.Count == 0)
+            {
+                MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
+                return;
+            }
+
+            // check to see if a trade is selected
+            if (FP.IsChecked == false & HD.IsChecked == false & HP.IsChecked == false & PL.IsChecked == false)
+            {
+                MessageBox.Show("Please Select A Trade", "Selection Error", MessageBoxButton.OK);
+                return;
+
+            }
+
+            //MessageBox.Show(SelectedTemplateType.Count.ToString());
+
+            CreateSheets();
+        }
+
+        private void CreateSheets()
+        {
+            try
+            {
+                //var viewCol = new FilteredElementCollector(Doc)
+                //    .OfClass(typeof(ViewPlan))
+                //    .Where(i => i.Name.Contains("Sheet_AccessPanels - 1"))
+                //    .First();
+                //MessageBox.Show(viewCol.Id.ToString());
+                //using (Transaction t = new Transaction(Doc))
+                //{
+                //    //var viewId = new ElementId(5933662);
+
+                //    t.Start("Create Sheets");
+                //    ViewSheet sheet = null;
+                //    var familySymbCol = new FilteredElementCollector(Doc)
+                //        .OfClass(typeof(FamilySymbol))
+                //        .Where(tb => tb.Name.Contains("36x48"))
+                //        .Cast<FamilySymbol>()
+                //        .FirstOrDefault();
+                //    //MessageBox.Show(familySymbCol.Name);
+
+                //    sheet = ViewSheet.Create(Doc, familySymbCol.Id);
+                //    sheet.Name = "test";
+                //    sheet.SheetNumber = "A-01";
+                //    Viewport.Create(Doc, sheet.Id, viewCol.Id, XYZ.Zero);
+                //    t.Commit();
+
+                //}
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 

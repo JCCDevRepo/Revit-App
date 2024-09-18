@@ -108,6 +108,43 @@
                     <Button Grid.Row="3" Grid.Column="1" Margin="224,0,20,-20" Name="vRangeApplyButton" Click="vRangeApplyButton_Click">Apply View Range Templates</Button>
                 </Grid>
             </TabItem>
+
+            <TabItem Header="Sheet Setup">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+
+
+
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="200"/>
+                    </Grid.ColumnDefinitions>
+                    <DataGrid Grid.Row="1" Grid.Column="1" Name="SheetLevels" AutoGenerateColumns="true" CanUserSortColumns="False" RowHeaderWidth="15" CanUserResizeRows="False" Height="auto" MaxHeight="400" Width="auto" Margin="20 0 20 20" AlternationCount="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Sheet Levels" Binding="{Binding Level}" IsReadOnly="True" Width="auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DataGrid Grid.Row="1" Grid.Column="2" Name="CreateSheetType" AutoGenerateColumns="true" CanUserSortColumns="False" RowHeaderWidth="15" CanUserResizeRows="False" Height="auto" MaxHeight="400" Width="auto" Margin="20 0 20 20" AlternationCount="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Sheet Type" Binding="{Binding ViewType}" IsReadOnly="True" Width="auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <RadioButton Grid.Row="2" Grid.Column="1" Name="FP" GroupName="TradesGroup" Margin="0">FP</RadioButton>
+                    <RadioButton Grid.Row="2" Grid.Column="1" Name="HD" GroupName="TradesGroup" Margin="50,0,100,0">HD</RadioButton>
+                    <RadioButton Grid.Row="2" Grid.Column="1" Name="HP" GroupName="TradesGroup" Margin="100 0 50 0">HP</RadioButton>
+                    <RadioButton Grid.Row="2" Grid.Column="1" Name="PL" GroupName="TradesGroup" Margin="150 0 0 0">PL</RadioButton>
+
+                    <Button Grid.Row="3" Grid.Column="1" Name="CreateSheetsButton" Click="CreateSheetsButton_Click">Create Sheets</Button>
+                    
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>
