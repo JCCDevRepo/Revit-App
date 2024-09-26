@@ -22,6 +22,7 @@ using System.IO;
 using Application = Autodesk.Revit.ApplicationServices.Application;
 using MessageBox = System.Windows.MessageBox;
 using View = Autodesk.Revit.DB.View;
+using System.Text.RegularExpressions;
 
 
 
@@ -109,7 +110,7 @@ namespace VDC_App
 
         private void PopulateViewTypes()
         {
-            // Method to display view type objects
+            // display view type objects
             var viewsList = new List<ViewTypes>
             {
                 new ViewTypes { ViewType = "Working"},
@@ -124,6 +125,11 @@ namespace VDC_App
                 new ViewTypes { ViewType = "Risers"},
                 new ViewTypes { ViewType = "Sketches"},
                 new ViewTypes { ViewType = "WallPens"},
+                new ViewTypes { ViewType = "SupplementalSteel"},
+                new ViewTypes { ViewType = "ServiceInstall"},
+                new ViewTypes { ViewType = "Engineering"},
+                new ViewTypes { ViewType = "BaseSupports"},
+
                 //new ViewTypes { ViewType = "Custom"},
 
             };
@@ -201,17 +207,6 @@ namespace VDC_App
                 MessageBox.Show("Please Select A View Type", "Selection Error", MessageBoxButton.OK);
                 return;
             }
-
-            //var viewDuplicateCheck = new FilteredElementCollector(Doc)
-            //    .Where(e => e.Name.Contains("_Sheet"))
-            //    .Where(e => e.LookupParameter("View Category").Equals("ANNOTATION"))
-            //    .ToList();
-
-            //foreach (var e in viewDuplicateCheck)
-            //{
-            //    if (e.Name.Contains())
-            //}
-
 
 
             // checks for the view categories 
@@ -392,7 +387,7 @@ namespace VDC_App
 
             using (Transaction tran = new Transaction(Doc))
             {
-                tran.Start("Create Dependent Views - Apply Cat");
+                tran.Start("Create Dependent Views");
                 foreach (var e in sheetViews)
                 {
                     // add the Annotation value to v cat parameter
@@ -957,10 +952,11 @@ namespace VDC_App
 
         #endregion
 
+        #region Create Sheets
         private void CreateSheetsButton_Click(object sender, RoutedEventArgs e)
         {
-            SelectedTemplateType = new UserSelectedItems(CreateSheetType).SelectedViewTypes();
-            if (SelectedTemplateType.Count == 0)
+            SelectedViewTypes = new UserSelectedItems(CreateSheetType).SelectedViewTypes();
+            if (SelectedViewTypes.Count == 0)
             {
                 MessageBox.Show("Please Select A Sheet Type", "Selection Error", MessageBoxButton.OK);
                 return;
@@ -1017,12 +1013,111 @@ namespace VDC_App
                 //    t.Commit();
 
                 //}
+
+                var titleBlock48 = new FilteredElementCollector(Doc)
+                    .OfClass(typeof(FamilySymbol))
+                    .Where(tb => tb.Name.Contains("36x48"))
+                    .Cast<FamilySymbol>()
+                    .FirstOrDefault();
+
+                string trade = null;
+
+                if (FP.IsChecked == true)
+                {
+                    trade = "FP";
+                }
+                else if (HD.IsChecked == true)
+                {
+                    trade = "HD";
+                }
+                else if (HP.IsChecked == true)
+                {
+                    trade = "HP";
+                }
+                else if (PL.IsChecked == true)
+                {
+                    trade = "PL";
+                }
+
+                var selectedViews = new List<ViewPlan>();
+
+                // returns the views based on user's selected levels and type
+                foreach (var e in UserSelected)
+                {
+                    // using view's name strings to select the view types and levels
+                    foreach (var vt in SelectedViewTypes)
+                    {
+
+                        var viewsCol = new FilteredElementCollector(Doc)
+                            .OfClass(typeof(ViewPlan))
+                            .Where( v => v.Name.ToLower().Contains(vt.ViewType.ToLower()))
+                            .Where(v => v.Name.ToLower().Contains(e.Level.ToLower()))
+                            .Cast<ViewPlan>()
+                            .ToList();
+
+                        selectedViews.AddRange(viewsCol);
+                    }
+
+
+                }
+
+                if (selectedViews.Count == 0)
+                {
+                    MessageBox.Show("Sheet Views Were Not Detected.\nPlease Check Views Or Naming Convention");
+                    return;
+                }
+
+                using (Transaction t = new Transaction(Doc))
+                {
+                    t.Start("Create Sheets");
+
+
+
+                    foreach (var e in selectedViews)
+                    {
+                        var sheetRename = new SheetsName(e, trade).RenameSheets();
+
+                        ViewSheet sheet = null;
+
+                        sheet = ViewSheet.Create(Doc, titleBlock48.Id);
+
+                        sheet.SheetNumber = sheetRename.sheetNumber;
+                        sheet.Name = sheetRename.sheetName;
+
+                        Viewport.Create(Doc, sheet.Id, e.Id, XYZ.Zero);
+
+                        //MessageBox.Show($"{sheetName.sheetName}\n{sheetName.sheetNumber}");
+
+
+                    }
+
+
+
+
+                    t.Commit();
+                }
+
+
+                var test = new List<string>();
+                foreach (var e in selectedViews)
+                {
+                    test.Add(e.Name);
+                }
+
+                //var simpform = new SimpleForm(test);
+                //simpform.Show();
+
+
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
+        #endregion
+
+
     }
 
 

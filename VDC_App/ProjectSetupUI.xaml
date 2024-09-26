@@ -136,10 +136,10 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <RadioButton Grid.Row="2" Grid.Column="1" Name="FP" GroupName="TradesGroup" Margin="0">FP</RadioButton>
-                    <RadioButton Grid.Row="2" Grid.Column="1" Name="HD" GroupName="TradesGroup" Margin="50,0,100,0">HD</RadioButton>
-                    <RadioButton Grid.Row="2" Grid.Column="1" Name="HP" GroupName="TradesGroup" Margin="100 0 50 0">HP</RadioButton>
-                    <RadioButton Grid.Row="2" Grid.Column="1" Name="PL" GroupName="TradesGroup" Margin="150 0 0 0">PL</RadioButton>
+                    <RadioButton Grid.Row="2" Grid.Column="1" Name="FP" GroupName="TradesGroup"  Margin="0">FP</RadioButton>
+                    <RadioButton Grid.Row="2" Grid.Column="1" Name="HD" GroupName="TradesGroup"  Margin="50,0,100,0">HD</RadioButton>
+                    <RadioButton Grid.Row="2" Grid.Column="1" Name="HP" GroupName="TradesGroup"  Margin="100 0 50 0">HP</RadioButton>
+                    <RadioButton Grid.Row="2" Grid.Column="1" Name="PL" GroupName="TradesGroup"  Margin="150 0 0 0">PL</RadioButton>
 
                     <Button Grid.Row="3" Grid.Column="1" Name="CreateSheetsButton" Click="CreateSheetsButton_Click">Create Sheets</Button>
                     

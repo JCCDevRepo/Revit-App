@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -443,9 +444,67 @@ public class ApplyViewTemplates
             v.ApplyViewTemplateParameters(getViewTemplate);
         }
     }
-    public void ApplyViewRange()
-    {
+}
 
+public class SheetsName
+{
+    private List<ViewPlan> ViewPlans { get; set; }
+
+    private ViewPlan View {  get; set; }
+
+    private string Trade {  get; set; }
+
+
+    public SheetsName (ViewPlan view, string trade)
+    {
+        //Document = doc;
+        View = view;
+        Trade = trade;
+    }
+
+    // this tupples allow the return of two variables
+    public (string sheetName, string sheetNumber) RenameSheets()
+    {
+        string sheetNumber = null;
+        string sheetName = null;
+
+        // regx to return name by matching level(any character group)-
+        // ex: LEVEL x0001
+        var levelName = Regex.Match(View.Name, @"(level(.*?))-", RegexOptions.IgnoreCase).Groups[1].Value;
+
+        // this returns only the "level"
+        var level = Regex.Match(View.Name, @"(level\s(.*?)\s)-", RegexOptions.IgnoreCase).Groups[2].Value;
+
+        // match - # or -## to determine area from name
+        // ex: 1  returns only the numerial value  
+        var areaNum = Regex.Match(View.Name, @"- (\d{1,2})").Groups[1].Value;
+
+
+        var getViewType = View.LookupParameter("View SubCategory").AsString();
+        switch (getViewType)
+        {
+            case "ShopDrawing":
+                {
+                    // ex: HP.LXX.Area
+                    sheetNumber = $"{Trade}." + $"L{level}" + $".{areaNum}";
+                    sheetName = levelName + "- PLAN - AREA " + areaNum;
+                    break;
+
+                }
+
+            case "Sleeving":
+                {
+                    // ex: HP.P.LXX.SLV.Area
+                    sheetNumber = $"{Trade}.P." + $"L{level}" + ".SLV" + $".{areaNum}";
+                    sheetName = "SLEEVING - " + levelName + " - AREA " + areaNum;
+                    break;
+
+                }
+        }
+        return (sheetName, sheetNumber);
+
+
+        //return sheetName;
     }
 
 }
