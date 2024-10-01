@@ -446,14 +446,11 @@ namespace VDC_App
 
             var primaryViews = new List<View>();
 
-            //foreach (var e in UserSelected) 
-            //{
-            //    selecElems.Add(sheetViews.Where(i => i.Name.Contains(e.Level)).First());
-            //}
+            var dependV = new List<ElementId>();
 
             foreach (var e in sheetViews)
             {
-                
+
                 // if primary value is -1 (view is parent view) and if view has no dependents (getdependviewids returns  < 1)
                 if (e.GetPrimaryViewId().IntegerValue == -1 & e.GetDependentViewIds().Count() < 1)
                 {
@@ -461,59 +458,35 @@ namespace VDC_App
                     //MessageBox.Show(e.Name);
 
                 }
-
+                else if (e.GetPrimaryViewId().IntegerValue == -1 & e.GetDependentViewIds().Count() > 1)
+                {
+                    var test = e.GetDependentViewIds();
+                    dependV.AddRange(test);
+                }
             }
 
 
-            //var form = new SimpleForm(selecElems.Select(e => e.Name));
-            //form.ShowDialog();
-
-            //for (int i = 0; i < sheetViews.Count; i++) 
-            //{
-            //    if (sheetViews.Any(e => e.Name.Contains(selecElems[i].Name)))
-            //    {
-            //        MessageBox.Show(sheetViews[i].Name);
-
-            //        continue;
-            //    }
-
-            //    i++;
-            //}
-
-
-
-            //var common = selecElems.Where(e => e.Name.Any(sheetViews.)));
-            //var test = new List<ElementId>();
-            //var sheetViews = new List<View>();
-            //foreach (var e in sheetCol)
-            //{
-            //    var col = e.GetDependentViewIds();
-            //    foreach (var id in col)
-            //        test.Add(id);
-
-            //    if (e.GetDependentViewIds().Count < 1)
-            //    {
-            //        sheetViews.Add(e);
-            //    }
-
-
-            //}
-            //var form = new SimpleForm(sheetViews.Select(e => e.Name));
-            //form.ShowDialog();
-
-
-
+            var form = new SimpleForm(dependV);
+            form.ShowDialog();
 
             using (Transaction tran = new Transaction(Doc))
             {
                 tran.Start("Create Dependent Views");
 
+                // list for storing the created dependent views
                 var dViewsList = new List<ElementId>();
+
                 foreach (var e in primaryViews)
                 {
+                    var ogName = e.Name;
+                    
                     var i = 0;
                     while (i < scopeBoxCol.Count)
                     {
+                        // temporary renames the overall to include the selected scopebox
+                        e.Name = ogName + scopeBoxCol[i].Name;
+
+                        // create dependent views
                         var dependentView = e.Duplicate(ViewDuplicateOption.AsDependent);
 
 
@@ -521,16 +494,25 @@ namespace VDC_App
 
                         i++;
                     }
+
+                    // reset overall view to original name
+                    e.Name = ogName;
                 }
 
 
-
+                // This loop is needed to correctly rename the dependent views
                 foreach (var e in dViewsList)
                 {
-                    var sbView = new StringBuilder(Doc.GetElement(e).Name);
-                    sbView.Replace("- 0 - Dependent", "-");
-                    Doc.GetElement(e).Name = sbView.ToString();
+                    var initialName = Doc.GetElement(e).Name;
 
+                    // regex to modify ex: LEVEL x0001 - Sheet_ShopDrawing - 0ScopeBox_003 - Dependent 1
+                    // returns LEVEL x0001 - Sheet_ShopDrawing - 03
+                    // "$1" refers to the value of group1 case group (\d{2})
+                    var result = Regex.Replace(initialName, @"0scopebox_0*(\d+) - dependent \d+", "$1", RegexOptions.IgnoreCase);
+
+                    Doc.GetElement(e).Name = result;
+
+                    //MessageBox.Show(result);
                 }
 
                 tran.Commit();
