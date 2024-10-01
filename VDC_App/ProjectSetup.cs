@@ -353,6 +353,16 @@ public class UserSelectedItems
         }
         return viewTypes;
     }
+
+    public List<Element> SelectedScopeBoxes()
+    {
+        var scopeBoxes = new List<Element>();
+        foreach (var e in DataGrid.SelectedItems)
+        {
+            scopeBoxes.Add(e as Element);
+        }
+        return scopeBoxes;
+    }
 }
 
 public class ViewsFromIds
@@ -373,6 +383,8 @@ public class ViewsFromIds
 
         foreach (var e in ViewIds)
         {
+            // ids returned from newly created views can include uneeded elements
+            // these if statements filtr them out and only return ids that are of category "Views"
             var temp = Document.GetElement(e);
 
             if (temp.Category == null)

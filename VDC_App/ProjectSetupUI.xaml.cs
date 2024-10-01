@@ -37,15 +37,15 @@ namespace VDC_App
         private Application App;
 
         private List<LevelsElevations> UserSelected;
-        private List<ViewTypes> SelectedViewTypes;
-        private List<ViewTypes> SelectedTemplateType;
 
         private List<ElementId> NewViewIds;
-        private List<ElementId> CreatedViewIds;
+        //private List<ElementId> CreatedViewIds;
         private List<ElementId> NewViewRangeIds;
         private List<ElementId> NewViewTemplateIds;
 
         private List<ViewTypes> ViewTypes;
+        private List<ViewTypes> SelectedViewTypes;
+        private List<ViewTypes> SelectedTemplateType;
 
 
         public ProjectSetupUI(Document doc, Application app)
@@ -55,6 +55,7 @@ namespace VDC_App
             InitializeComponent();
             PopulateLevels();
             PopulateViewTypes();
+            PopulateScopeboxes();
 
 
         }
@@ -146,7 +147,17 @@ namespace VDC_App
         }
 
 
+        private void PopulateScopeboxes()
+        {
+            // get all scopeboxes with the vdc naming convention
+            var scopeBoxCol = new FilteredElementCollector(Doc)
+                .OfCategory(BuiltInCategory.OST_VolumeOfInterest)
+                .Where(e => e.Name.Contains("ScopeBox_"))
+                .ToList();
+            // bind it to the UI datagrid
+            ScopeBoxes.ItemsSource = scopeBoxCol;
 
+        }
 
 
 
@@ -161,15 +172,30 @@ namespace VDC_App
             {
                 //return the user selected items from the UI
                 UserSelected = new UserSelectedItems(CreatViewsSetup).SelectedLevels();
-
                 if (UserSelected.Count == 0)
                 {
                     MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
                     return;
                 }
 
+                // viewtype selection check
+                var vTypeCheck = new UserSelectedItems(ViewTypeSetup).SelectedViewTypes();
+                if (vTypeCheck.Count == 0)
+                {
+                    MessageBox.Show("Please Select A View Type", "Selection Error", MessageBoxButton.OK);
+                    return;
+                }
+
+                // Scopebox Checking
+                var scopeBoxCheck = new UserSelectedItems(ScopeBoxes).SelectedScopeBoxes();
+                if (scopeBoxCheck.Count == 0)
+                {
+                    MessageBox.Show("Please Select A Scope Box");
+                    return;
+                }
+
                 CreateViews();
-                RenameViews();
+                //RenameViews();
                 CreateDependentViews();
 
             }
@@ -190,6 +216,7 @@ namespace VDC_App
                 .OfClass(typeof(ViewFamilyType))
                 .Where(f => f.Name.Equals("-Working")).FirstOrDefault();
 
+            // get the view family type of "-RCPs"
             var viewFamilyRcpCol = new FilteredElementCollector(Doc)
                 .OfClass(typeof(ViewFamilyType))
                 .Where(f => f.Name.Equals("Ceiling Plan")).FirstOrDefault();
@@ -202,12 +229,6 @@ namespace VDC_App
 
             
             SelectedViewTypes = new UserSelectedItems(ViewTypeSetup).SelectedViewTypes();
-            if (SelectedViewTypes.Count == 0)
-            {
-                MessageBox.Show("Please Select A View Type", "Selection Error", MessageBoxButton.OK);
-                return;
-            }
-
 
             // checks for the view categories 
             // Need _View Template View as a reference in central
@@ -215,7 +236,7 @@ namespace VDC_App
             if (categoryCheck.Count == 0)
             {
                 MessageBox.Show("Missing _View Templates View");
-                MessageBox.Show(categoryCheck.Count.ToString());
+                //MessageBox.Show(categoryCheck.Count.ToString());
 
                 return;
             }
@@ -230,6 +251,11 @@ namespace VDC_App
                 }
             }
 
+            var vDuplicateCheck = new FilteredElementCollector(Doc)
+                .OfClass(typeof(ViewPlan))
+                .Select(e => e.Name)
+                .ToList();
+
 
             NewViewIds = new List<ElementId>();
             // event that returns the newly created element ids
@@ -239,23 +265,61 @@ namespace VDC_App
             {
 
                 t.Start("Create Views");
-                //var simpform = new SimpleForm(viewTypeCol);
-                //simpform.Show();
+
+                // foreach loop for the user selected levels (do this for each of the user selected levels).
                 foreach (var l in UserSelected)
                 {
-                    // if the user selects an RCP (different plan type), use the rcp view family
+                    // while loop is for selected view types (for each selected levels, create all views of each type)
                     var i = 0;
                     while (i < SelectedViewTypes.Count)
                     {
-                        if (SelectedViewTypes[i].ViewType.Contains("RCP"))
-                        {
-                            ViewPlan.Create(Doc, viewFamilyRcpCol.Id, l.Id);
+                        // variable to simplify the statements. this just returns the view type at the current index
+                        var viewTypeI = SelectedViewTypes[i].ViewType;
 
-                        }
-                        else
+                        // switch for delineating view types and renaming
+                        switch(viewTypeI)
                         {
-                            ViewPlan.Create(Doc, viewFamilyCol.Id, l.Id);
+                            case "Working":
+                                {
+                                    // if statement for checking if the view already exists
+                                    if (!vDuplicateCheck.Contains(l.Level))
+                                    {
+                                        var createView = ViewPlan.Create(Doc, viewFamilyCol.Id, l.Id);
+                                        createView.Name = l.Level;
+                                        createView.LookupParameter("View Category").Set("_WORKING");
+                                        createView.LookupParameter("View SubCategory").Set("Coordination");
+                                    }
 
+                                    break;
+                                }
+
+                            case "RCP":
+                                {
+                                    if (!vDuplicateCheck.Contains(l.Level + "_RCP"))
+                                    {
+                                        var createView = ViewPlan.Create(Doc, viewFamilyRcpCol.Id, l.Id);
+                                        createView.Name = l.Level + "_RCP";
+                                        createView.LookupParameter("View Category").Set("_WORKING");
+                                        createView.LookupParameter("View SubCategory").Set("RCP");
+
+                                    }
+                                    break;
+                                }
+
+                            default:
+                                {
+                                    if(!vDuplicateCheck.Contains(l.Level + " - Sheet_" + viewTypeI + " - 0"))
+                                    {
+                                        var createView = ViewPlan.Create(Doc, viewFamilyCol.Id, l.Id);
+                                        createView.Name = l.Level + " - Sheet_" + viewTypeI + " - 0";
+                                        createView.LookupParameter("View Category").Set("ANNOTATION");
+                                        createView.LookupParameter("View SubCategory").Set(viewTypeI);
+                                    }
+
+                                    break;
+                                }
+
+                            
                         }
 
                         i++;
@@ -270,17 +334,17 @@ namespace VDC_App
 
 
 
-            //var simpF = new SimpleForm(NewViewIds);
-            //simpF.Show();
         }
 
         private void OnDocumentChanged(object sender, DocumentChangedEventArgs e)
         {
-            //MessageBox.Show(i.ToString());
+            //MessageBox.Show(e.ToString());
             NewViewIds.AddRange(e.GetAddedElementIds());
         }
 
-
+        
+        #region rename view (deprecated)
+        /*
         private void RenameViews()
         {
             //CreatedViewIds = new List<ElementId>();
@@ -291,6 +355,7 @@ namespace VDC_App
                 MessageBox.Show("The Ids of The New Views Were not Found", "Returned Ids Error");
                 return;
             }
+
 
             var viewplanElems = new List<View>();
 
@@ -303,6 +368,15 @@ namespace VDC_App
 
             // this reorder is needed as the iteration is dependant on consecutive items
             var sortedVpElems = viewplanElems.OrderBy(e => e.Name).ToList();
+
+            var vDuplicateCheck = new FilteredElementCollector(Doc)
+                .OfClass(typeof(ViewPlan))
+                .Select(e => e.Name)
+                .ToList();
+
+            var form = new SimpleForm(vDuplicateCheck);
+            form.ShowDialog();
+
 
             using (Transaction tran = new Transaction(Doc))
             {
@@ -344,127 +418,123 @@ namespace VDC_App
 
 
 
-
             //MessageBox.Show(viewTypes.ViewType)
             //var simpF = new SimpleForm(viewTypes);
             //simpF.Show();
 
-        }
+        } */
+        #endregion
+        
+
 
         private void CreateDependentViews()
         {
             // get all vdc scope boxes in project
-            var scopeBoxCol = new FilteredElementCollector(Doc)
-                .OfCategory(BuiltInCategory.OST_VolumeOfInterest)
-                .Where(e => e.Name.Contains("ScopeBox_"))
+            var scopeBoxCol = new UserSelectedItems(ScopeBoxes).SelectedScopeBoxes();
+
+            
+
+            var sheetCol = new FilteredElementCollector(Doc)
+                .OfClass(typeof(View))
+                .Where(e => e.Name.ToLower().Contains("sheet_"))
                 .ToList();
 
-            // null checking
-            if (scopeBoxCol.Count == 0)
+
+
+            // this method filters out other views that are not necessary
+            var sheetViews = new ViewsFromIds(Doc, sheetCol.Select(e => e.Id).ToList()).GetViews();
+
+            var primaryViews = new List<View>();
+
+            //foreach (var e in UserSelected) 
+            //{
+            //    selecElems.Add(sheetViews.Where(i => i.Name.Contains(e.Level)).First());
+            //}
+
+            foreach (var e in sheetViews)
             {
-                MessageBox.Show("No Scopeboxes Found\nPlease add Scopeboxes or\nPlease Follow Naming Convention: ScopeBox_##");
-                return;
+                
+                // if primary value is -1 (view is parent view) and if view has no dependents (getdependviewids returns  < 1)
+                if (e.GetPrimaryViewId().IntegerValue == -1 & e.GetDependentViewIds().Count() < 1)
+                {
+                    primaryViews.Add(e);
+                    //MessageBox.Show(e.Name);
+
+                }
+
             }
 
-            // this returns all the newly created views with "sheet" in the name
-            var sheetViews = new List<View>();
-            var workingView = new List<View>();
-            foreach (var e in CreatedViewIds)
-            {
-                var temp = Doc.GetElement(e);
-                if (temp.Name.ToLower().Contains("sheet_"))
-                {
-                    sheetViews.Add(temp as View);
-                }
-                else
-                {
-                    workingView.Add(temp as View);
-                }
 
-            }
+            //var form = new SimpleForm(selecElems.Select(e => e.Name));
+            //form.ShowDialog();
+
+            //for (int i = 0; i < sheetViews.Count; i++) 
+            //{
+            //    if (sheetViews.Any(e => e.Name.Contains(selecElems[i].Name)))
+            //    {
+            //        MessageBox.Show(sheetViews[i].Name);
+
+            //        continue;
+            //    }
+
+            //    i++;
+            //}
+
+
+
+            //var common = selecElems.Where(e => e.Name.Any(sheetViews.)));
+            //var test = new List<ElementId>();
+            //var sheetViews = new List<View>();
+            //foreach (var e in sheetCol)
+            //{
+            //    var col = e.GetDependentViewIds();
+            //    foreach (var id in col)
+            //        test.Add(id);
+
+            //    if (e.GetDependentViewIds().Count < 1)
+            //    {
+            //        sheetViews.Add(e);
+            //    }
+
+
+            //}
+            //var form = new SimpleForm(sheetViews.Select(e => e.Name));
+            //form.ShowDialog();
+
 
 
 
             using (Transaction tran = new Transaction(Doc))
             {
                 tran.Start("Create Dependent Views");
-                foreach (var e in sheetViews)
-                {
-                    // add the Annotation value to v cat parameter
-                    e.LookupParameter("View Category").Set("ANNOTATION");
-                    
-                    // string manipulation to return the annotation view type
-                    // used this name as the subcategory
-                    var vName = e.Name;
-                    var sbView = new StringBuilder(vName);
-                    var indexEnd = vName.LastIndexOf("_") + 1;
-                    var sheetType = sbView.Remove(0, indexEnd).Replace("- 0", "").ToString();
-                    //var test = sheetType.Replace("- 0", "");
-                    // set sub cat to name of view type
-                    e.LookupParameter("View SubCategory").Set(sheetType);
 
-                }
-
-                // add categories to working views
-                foreach (var e in  workingView)
-                {
-                    e.LookupParameter("View Category").Set("_WORKING");
-
-                    if (e.Name.Contains("RCP"))
-                    {
-                        e.LookupParameter("View SubCategory").Set("RCP");
-
-                    }
-                    else
-                    {
-                        e.LookupParameter("View SubCategory").Set("Coordination");
-
-                    }
-
-
-                }
-
-                foreach (var e in sheetViews)
+                var dViewsList = new List<ElementId>();
+                foreach (var e in primaryViews)
                 {
                     var i = 0;
                     while (i < scopeBoxCol.Count)
                     {
-                        e.Duplicate(ViewDuplicateOption.AsDependent);
+                        var dependentView = e.Duplicate(ViewDuplicateOption.AsDependent);
+
+
+                        dViewsList.Add(dependentView);
 
                         i++;
                     }
                 }
 
-                var dependView = new collector(Doc, "- dependent").GetViewsList();
 
-                foreach (var e in dependView)
+
+                foreach (var e in dViewsList)
                 {
-                    var sbView = new StringBuilder(e.Name);
+                    var sbView = new StringBuilder(Doc.GetElement(e).Name);
                     sbView.Replace("- 0 - Dependent", "-");
-                    //MessageBox.Show(sbView.ToString());
-
-                    e.Name = sbView.ToString();
+                    Doc.GetElement(e).Name = sbView.ToString();
 
                 }
 
-                //var simpF = new SimpleForm(dependView);
-                //simpF.Show();
-
-
-
                 tran.Commit();
             }
-
-
-
-            // View Category Parameters checking
-
-            //foreach (var s in scopeBoxCol)
-            //{
-            //    MessageBox.Show(s.Name);
-            //}
-            //var simpF = new SimpleForm(sheetIds);
-            //simpF.Show();
 
 
         }
