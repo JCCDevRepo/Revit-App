@@ -486,7 +486,7 @@ public class SheetsName
 
         // this returns only the "level"
         var level = Regex.Match(View.Name, @"(level\s(.*?)\s)-", RegexOptions.IgnoreCase).Groups[2].Value;
-
+        
         // match - # or -## to determine area from name
         // ex: 1  returns only the numerial value  
         var areaNum = Regex.Match(View.Name, @"- (\d{1,2})").Groups[1].Value;
@@ -495,10 +495,93 @@ public class SheetsName
         var getViewType = View.LookupParameter("View SubCategory").AsString();
         switch (getViewType)
         {
+
+            case "AccessPanels":
+                {
+                    // ex: HP.LXX.AREA.AP
+                    sheetNumber = Trade + $".L{level}." + areaNum + ".AP";
+                    sheetName = "ACCESS PANELS - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "BaseSupports":
+                {
+                    // ex: HP.S.LXX.Area.BS
+                    sheetNumber = Trade + $".S.L{level}." + areaNum + ".BS";
+                    sheetName = "BASE SUPPORTS - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "BeamPens":
+                {
+                    // ex: HP.P.LXX.AREA.BP
+                    sheetNumber = Trade + $".P.L{level}." + areaNum + ".BP";
+                    sheetName = "BEAM PENETRATIONS - " + levelName + " - AREA " + areaNum;
+                    break;
+
+                }
+
+            case "Engineering":
+                {
+                    // ex: HP.XX.AREA.ENG
+                    sheetNumber = Trade + $".{level}." + areaNum + ".ENG";
+                    sheetName = "Engineering - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "Hangers":
+                {
+                    // ex: HP.LXX.AREA.AP
+                    sheetNumber = Trade + $".S.L{level}." + areaNum + ".SUPTS";
+                    sheetName = "SUPPORTS - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "PadDrawings":
+                {
+                    // ex: HP.LXX.AREA.PADS
+                    sheetNumber = Trade + $".L{level}." + areaNum + "PADS";
+                    sheetName = levelName + "- PLAN - AREA " + areaNum;
+                    break;
+
+                }
+
+            case "PointLoads":
+                {
+                    // ex: HP.LXX.AREA.LOADS
+                    sheetNumber = Trade + $".L{level}." + areaNum + ".LOADS";
+                    sheetName = "Point Loads - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "Risers":
+                {
+                    // ex: HP.Riser-XX.Area
+                    sheetNumber = Trade + $".Riser.{level}." + areaNum;
+                    sheetName = "RISERS - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "ServiceInstall":
+                {
+                    // ex: HP.LXX.Area.Service Abr
+                    sheetNumber = Trade + $".L{level}." + areaNum + ".SVCS";
+                    sheetName = "SERVICE INSTALL - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "Sketches":
+                {
+                    // ex: HP.SK.X.Area
+                    sheetNumber = Trade + $".SK.{level}." + areaNum;
+                    sheetName = "SKETCHES - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
             case "ShopDrawing":
                 {
                     // ex: HP.LXX.Area
-                    sheetNumber = $"{Trade}." + $"L{level}" + $".{areaNum}";
+                    sheetNumber = Trade + $".L{level}." + areaNum;
                     sheetName = levelName + "- PLAN - AREA " + areaNum;
                     break;
 
@@ -506,11 +589,19 @@ public class SheetsName
 
             case "Sleeving":
                 {
-                    // ex: HP.P.LXX.SLV.Area
-                    sheetNumber = $"{Trade}.P." + $"L{level}" + ".SLV" + $".{areaNum}";
+                    // ex: HP.P.LXX.Area.SLV
+                    sheetNumber = Trade + $".P.L{level}." + areaNum + ".SLV";
                     sheetName = "SLEEVING - " + levelName + " - AREA " + areaNum;
                     break;
 
+                }
+
+            case "SupplementalSteel":
+                {
+                    // ex: HP.S.LXX.Area.SS
+                    sheetNumber = Trade + $"S.L{level}." + areaNum + ".SS";
+                    sheetName = "SUPPLEMENTAL STEEL - " + levelName + "- AREA " + areaNum;
+                    break;
                 }
         }
         return (sheetName, sheetNumber);

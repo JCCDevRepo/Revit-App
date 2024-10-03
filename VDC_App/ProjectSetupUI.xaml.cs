@@ -195,7 +195,6 @@ namespace VDC_App
                 }
 
                 CreateViews();
-                //RenameViews();
                 CreateDependentViews();
 
             }
@@ -342,96 +341,18 @@ namespace VDC_App
             NewViewIds.AddRange(e.GetAddedElementIds());
         }
 
-        
-        #region rename view (deprecated)
-        /*
-        private void RenameViews()
-        {
-            //CreatedViewIds = new List<ElementId>();
-            //var viewCatId = new ElementId(BuiltInCategory.OST_Views);
-
-            if (NewViewIds == null)
-            {
-                MessageBox.Show("The Ids of The New Views Were not Found", "Returned Ids Error");
-                return;
-            }
-
-
-            var viewplanElems = new List<View>();
-
-            var getNewView = new ViewsFromIds(Doc, NewViewIds);
-
-            viewplanElems = getNewView.GetViews();
-
-            CreatedViewIds = getNewView.GetViews()
-                .Select(e => e.Id).ToList();
-
-            // this reorder is needed as the iteration is dependant on consecutive items
-            var sortedVpElems = viewplanElems.OrderBy(e => e.Name).ToList();
-
-            var vDuplicateCheck = new FilteredElementCollector(Doc)
-                .OfClass(typeof(ViewPlan))
-                .Select(e => e.Name)
-                .ToList();
-
-            var form = new SimpleForm(vDuplicateCheck);
-            form.ShowDialog();
-
-
-            using (Transaction tran = new Transaction(Doc))
-            {
-                tran.Start("Renamed Views");
-
-                for (var i = 0; i < sortedVpElems.Count; i++)
-                {
-                    var elem = sortedVpElems[i];
-                    // Genlevel is the generated level that the view was created from. used this to rename
-                    var levName = elem.GenLevel.Name;
-
-                    // using the modulo operator to reset collection count once the max item as been reached.
-                    // This must be paired with the ordered list element names as it is processed consecutively.
-                    var index2 = i % SelectedViewTypes.Count;
-
-                    var viewType = SelectedViewTypes[index2];
-
-                    // control to isolate non sheet views
-                    if (viewType.ViewType.Equals("Working"))
-                    {
-                        //elem.Name = levName + " - " + viewType.ViewType;
-                        elem.Name = levName;
-
-                    }
-                    else if (viewType.ViewType.Equals("RCP"))
-                    {
-                        elem.Name = levName + "_" + "RCP";
-                    }
-                    else
-                    {
-                        elem.Name = levName + " - " + "Sheet_" + viewType.ViewType + " - 0";
-                    }
-
-
-
-                }
-                tran.Commit();
-            }
-
-
-
-            //MessageBox.Show(viewTypes.ViewType)
-            //var simpF = new SimpleForm(viewTypes);
-            //simpF.Show();
-
-        } */
-        #endregion
-        
-
-
+      
         private void CreateDependentViews()
         {
             // get all vdc scope boxes in project
             var scopeBoxCol = new UserSelectedItems(ScopeBoxes).SelectedScopeBoxes();
 
+            //var scopeBoxAsStr = new List<string>();
+            //foreach (var e in scopeBoxCol) 
+            //{
+            //    var sbSuffix = Regex.Match(e.Name, @"_0*(\d+$)").Groups[1].Value;
+            //    scopeBoxAsStr.Add(sbSuffix);
+            //}
             
 
             var sheetCol = new FilteredElementCollector(Doc)
@@ -446,10 +367,14 @@ namespace VDC_App
 
             var primaryViews = new List<View>();
 
-            var dependV = new List<ElementId>();
+            var dependV = new List<View>();
 
             foreach (var e in sheetViews)
             {
+                var levStr = Regex.Match(e.Name, @"(level(.*?)) -", RegexOptions.IgnoreCase).Groups[1].Value;
+
+                // returns 3 in ex: LEVEL x0001 - Sheet_ShopDrawing - 3
+                var scopeboxStr = Regex.Match(e.Name, @" - (\d+$)").Groups[1].Value;
 
                 // if primary value is -1 (view is parent view) and if view has no dependents (getdependviewids returns  < 1)
                 if (e.GetPrimaryViewId().IntegerValue == -1 & e.GetDependentViewIds().Count() < 1)
@@ -458,16 +383,24 @@ namespace VDC_App
                     //MessageBox.Show(e.Name);
 
                 }
-                else if (e.GetPrimaryViewId().IntegerValue == -1 & e.GetDependentViewIds().Count() > 1)
-                {
-                    var test = e.GetDependentViewIds();
-                    dependV.AddRange(test);
-                }
+                //else if (e.GetPrimaryViewId().IntegerValue == -1 & e.GetDependentViewIds().Count() > 1)
+                //else if (UserSelected.Select(i => i.Level.Contains(levStr)).Any() & e.GetPrimaryViewId().IntegerValue != -1)
+                //{
+                //    var www = scopeBoxAsStr.Where(i => i.Equals(scopeboxStr));
+                //    //var www = scopeBoxCol.Select(i => i.Name.  );
+                //    //var www = scopeBoxCol.Where(i => i.Name.Contains(scopeboxStr));
+
+                //    //MessageBox.Show(scopeboxStr);
+
+                //    dependV.Add(www);
+
+
+                //}
             }
 
 
-            var form = new SimpleForm(dependV);
-            form.ShowDialog();
+            //var form = new SimpleForm(dependV.Select(e => e.Name));
+            //form.ShowDialog();
 
             using (Transaction tran = new Transaction(Doc))
             {
@@ -1040,31 +973,6 @@ namespace VDC_App
         {
             try
             {
-                //var viewCol = new FilteredElementCollector(Doc)
-                //    .OfClass(typeof(ViewPlan))
-                //    .Where(i => i.Name.Contains("Sheet_AccessPanels - 1"))
-                //    .First();
-                //MessageBox.Show(viewCol.Id.ToString());
-                //using (Transaction t = new Transaction(Doc))
-                //{
-                //    //var viewId = new ElementId(5933662);
-
-                //    t.Start("Create Sheets");
-                //    ViewSheet sheet = null;
-                //    var familySymbCol = new FilteredElementCollector(Doc)
-                //        .OfClass(typeof(FamilySymbol))
-                //        .Where(tb => tb.Name.Contains("36x48"))
-                //        .Cast<FamilySymbol>()
-                //        .FirstOrDefault();
-                //    //MessageBox.Show(familySymbCol.Name);
-
-                //    sheet = ViewSheet.Create(Doc, familySymbCol.Id);
-                //    sheet.Name = "test";
-                //    sheet.SheetNumber = "A-01";
-                //    Viewport.Create(Doc, sheet.Id, viewCol.Id, XYZ.Zero);
-                //    t.Commit();
-
-                //}
 
                 var titleBlock48 = new FilteredElementCollector(Doc)
                     .OfClass(typeof(FamilySymbol))
@@ -1102,8 +1010,10 @@ namespace VDC_App
 
                         var viewsCol = new FilteredElementCollector(Doc)
                             .OfClass(typeof(ViewPlan))
-                            .Where( v => v.Name.ToLower().Contains(vt.ViewType.ToLower()))
+                            .Where(v => v.Name.ToLower().Contains(vt.ViewType.ToLower()))
+                            //.Where(v => v.LookupParameter("View SubCategory"))
                             .Where(v => v.Name.ToLower().Contains(e.Level.ToLower()))
+                            .Where(v => v.LookupParameter("View SubCategory").AsString().Contains(vt.ViewType))
                             .Cast<ViewPlan>()
                             .ToList();
 
@@ -1112,6 +1022,9 @@ namespace VDC_App
 
 
                 }
+
+                //var simpleform = new SimpleForm(selectedViews.Select(v => v.Name));
+                //simpleform.Show();
 
                 if (selectedViews.Count == 0)
                 {
@@ -1127,6 +1040,7 @@ namespace VDC_App
 
                     foreach (var e in selectedViews)
                     {
+                        // logic to rename sheet type and trade
                         var sheetRename = new SheetsName(e, trade).RenameSheets();
 
                         ViewSheet sheet = null;
@@ -1135,6 +1049,12 @@ namespace VDC_App
 
                         sheet.SheetNumber = sheetRename.sheetNumber;
                         sheet.Name = sheetRename.sheetName;
+                        
+                        // set the sheet category to the Level name (this case I used the Generated level)
+                        // Sub cat set to the values of the Sheet View
+                        sheet.LookupParameter("View Category").Set(e.GenLevel.Name);
+                        sheet.LookupParameter("View SubCategory").Set(e.LookupParameter("View SubCategory").AsString());
+
 
                         Viewport.Create(Doc, sheet.Id, e.Id, XYZ.Zero);
 
