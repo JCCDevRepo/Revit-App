@@ -307,12 +307,32 @@ namespace VDC_App
 
                             default:
                                 {
-                                    if(!vDuplicateCheck.Contains(l.Level + " - Sheet_" + viewTypeI + " - 0"))
+                                    // for applying overall scope
+                                    var scopeBoxCol = new FilteredElementCollector(Doc)
+                                        .OfCategory(BuiltInCategory.OST_VolumeOfInterest)
+                                        .Where(e => e.Name.Contains("0"))
+                                        .ToList();
+
+                                    if (!vDuplicateCheck.Contains(l.Level + " - Sheet_" + viewTypeI + " - 0"))
                                     {
                                         var createView = ViewPlan.Create(Doc, viewFamilyCol.Id, l.Id);
                                         createView.Name = l.Level + " - Sheet_" + viewTypeI + " - 0";
                                         createView.LookupParameter("View Category").Set("ANNOTATION");
                                         createView.LookupParameter("View SubCategory").Set(viewTypeI);
+
+                                        // apply overall scope if SB name ends in zero
+                                        foreach (var e in scopeBoxCol)
+                                        {
+                                            var regex = Regex.IsMatch(e.Name, @"0+$");
+                                            //MessageBox.Show(regex);
+                                            if (regex)
+                                            {
+                                                createView.get_Parameter(BuiltInParameter.VIEWER_VOLUME_OF_INTEREST_CROP).Set(e.Id);
+
+                                            }
+                                        }
+
+
                                     }
 
                                     break;
@@ -425,6 +445,9 @@ namespace VDC_App
 
                         dViewsList.Add(dependentView);
 
+                        // set the dependent view's cropbox. Done throough setting the parameter to current index.
+                        Doc.GetElement(dependentView).get_Parameter(BuiltInParameter.VIEWER_VOLUME_OF_INTEREST_CROP).Set(scopeBoxCol[i].Id);
+                        
                         i++;
                     }
 
