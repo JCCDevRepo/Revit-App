@@ -491,6 +491,7 @@ public class SheetsName
         // ex: 1  returns only the numerial value  
         var areaNum = Regex.Match(View.Name, @"- (\d{1,2})").Groups[1].Value;
 
+        
 
         var getViewType = View.LookupParameter("View SubCategory").AsString();
         switch (getViewType)
@@ -514,6 +515,11 @@ public class SheetsName
 
             case "BeamPens":
                 {
+                    if(Trade == "FP")
+                    {
+                        sheetNumber = Trade + "2" + level + "." + areaNum + ".B";
+                        sheetName = levelName + "- Area " + areaNum + " - Beam Penetration Drawing";
+                    }
                     // ex: HP.P.LXX.AREA.BP
                     sheetNumber = Trade + $".P.L{level}." + areaNum + ".BP";
                     sheetName = "BEAM PENETRATIONS - " + levelName + " - AREA " + areaNum;
@@ -529,8 +535,28 @@ public class SheetsName
                     break;
                 }
 
+            case "FieldDrawings":
+                {
+                    if(Trade == "FP")
+                    {
+                        sheetNumber = Trade + "5" + level + "." + areaNum;
+                        sheetName = levelName + "- Area " + areaNum + " - Field Drawing";
+                        break;
+                    }
+                    sheetNumber = Trade + $".{level}." + areaNum + ".FIELD";
+                    sheetName = "Field Drawing - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+
             case "Hangers":
                 {
+                    if (Trade == "FP")
+                    {
+                        sheetNumber = Trade + "4" + level + "." + areaNum;
+                        sheetName = levelName + "- Area " + areaNum + " - Hanger Drawing";
+                        break;
+                    }
                     // ex: HP.LXX.AREA.AP
                     sheetNumber = Trade + $".S.L{level}." + areaNum + ".SUPTS";
                     sheetName = "SUPPORTS - " + levelName + "- AREA " + areaNum;
@@ -580,6 +606,12 @@ public class SheetsName
 
             case "ShopDrawing":
                 {
+                    if(Trade == "FP")
+                    {
+                        sheetNumber = Trade + "1" + level + "." + areaNum;
+                        sheetName = levelName + "- Area " + areaNum + " - Shop Drawing";
+                        break;
+                    }
                     // ex: HP.LXX.Area
                     sheetNumber = Trade + $".L{level}." + areaNum;
                     sheetName = levelName + "- PLAN - AREA " + areaNum;
@@ -589,6 +621,11 @@ public class SheetsName
 
             case "Sleeving":
                 {
+                    if(Trade == "FP")
+                    {
+                        sheetNumber = Trade + "2" + level + "." + areaNum + ".S";
+                        sheetName = levelName + "- Area " + areaNum + " - Slab Penetration";
+                    }
                     // ex: HP.P.LXX.Area.SLV
                     sheetNumber = Trade + $".P.L{level}." + areaNum + ".SLV";
                     sheetName = "SLEEVING - " + levelName + " - AREA " + areaNum;
@@ -601,6 +638,19 @@ public class SheetsName
                     // ex: HP.S.LXX.Area.SS
                     sheetNumber = Trade + $"S.L{level}." + areaNum + ".SS";
                     sheetName = "SUPPLEMENTAL STEEL - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "WallPens":
+                {
+                    if (Trade == "FP")
+                    {
+                        sheetNumber = Trade + "2" + level + "." + areaNum + ".W";
+                        sheetName = levelName + "- Area " + areaNum + " - Wall Penetration";
+                        break;
+                    }
+                    sheetNumber = Trade + $".P.L{level}." + areaNum + ".W";
+                    sheetName = "Wall Penetration - " + levelName + " - AREA " + areaNum;
                     break;
                 }
         }

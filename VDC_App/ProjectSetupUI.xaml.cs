@@ -130,6 +130,7 @@ namespace VDC_App
                 new ViewTypes { ViewType = "ServiceInstall"},
                 new ViewTypes { ViewType = "Engineering"},
                 new ViewTypes { ViewType = "BaseSupports"},
+                new ViewTypes { ViewType = "FieldDrawings"},
 
                 //new ViewTypes { ViewType = "Custom"},
 
@@ -1008,6 +1009,10 @@ namespace VDC_App
                 if (FP.IsChecked == true)
                 {
                     trade = "FP";
+                    CreateSheetType.Items.Remove(ViewTypes.Where(e => e.ViewType == "PadDrawings"));
+                    MessageBox.Show(CreateSheetType.Items.Count.ToString());
+
+                    CreateSheetType.Items.Refresh();
                 }
                 else if (HD.IsChecked == true)
                 {
