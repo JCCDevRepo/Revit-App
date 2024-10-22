@@ -131,6 +131,8 @@ namespace VDC_App
                 new ViewTypes { ViewType = "Engineering"},
                 new ViewTypes { ViewType = "BaseSupports"},
                 new ViewTypes { ViewType = "FieldDrawings"},
+                new ViewTypes { ViewType = "HeadCutBack"},
+
 
                 //new ViewTypes { ViewType = "Custom"},
 
@@ -1005,6 +1007,12 @@ namespace VDC_App
                     .Cast<FamilySymbol>()
                     .FirstOrDefault();
 
+                var titleBlock72 = new FilteredElementCollector(Doc)
+                    .OfClass(typeof(FamilySymbol))
+                    .Where(tb => tb.Name.Contains("72x96"))
+                    .Cast<FamilySymbol>()
+                    .FirstOrDefault();
+
                 string trade = null;
 
                 if (FP.IsChecked == true)
@@ -1073,7 +1081,15 @@ namespace VDC_App
 
                         ViewSheet sheet = null;
 
-                        sheet = ViewSheet.Create(Doc, titleBlock48.Id);
+                        var regex = Regex.IsMatch(e.Name, @"- 0+$");
+                        if (regex == true || e.Name.ToLower().Contains("- overall"))
+                        {
+                            sheet = ViewSheet.Create(Doc, titleBlock72.Id);
+                        }
+                        else
+                        {
+                            sheet = ViewSheet.Create(Doc, titleBlock48.Id);
+                        }
 
                         sheet.SheetNumber = sheetRename.sheetNumber;
                         sheet.Name = sheetRename.sheetName;

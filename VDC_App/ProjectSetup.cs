@@ -386,8 +386,9 @@ public class ViewsFromIds
             // ids returned from newly created views can include uneeded elements
             // these if statements filtr them out and only return ids that are of category "Views"
             var temp = Document.GetElement(e);
+            var isTemplate = temp as ViewPlan;
 
-            if (temp.Category == null)
+            if (temp.Category == null || isTemplate.IsTemplate == true)
             {
                 continue;
             }
@@ -560,6 +561,14 @@ public class SheetsName
                     // ex: HP.LXX.AREA.AP
                     sheetNumber = Trade + $".S.L{level}." + areaNum + ".SUPTS";
                     sheetName = "SUPPORTS - " + levelName + "- AREA " + areaNum;
+                    break;
+                }
+
+            case "HeadCutBack":
+                {
+
+                    sheetNumber = Trade + "6" + level + "." + areaNum;
+                    sheetName = levelName + "- Area " + areaNum + " - Head Cutback Drawing";
                     break;
                 }
 
