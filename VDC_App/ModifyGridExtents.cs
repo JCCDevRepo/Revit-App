@@ -50,7 +50,11 @@ namespace VDC_App
             var listViewIds = new List<ElementId>();
             foreach (var e in viewPlanCollector)
             {
-                //var viewPlans = e as View;
+                var viewPlans = e as ViewPlan;
+                if(viewPlans.IsTemplate)
+                {
+                    continue;
+                }
 
                 listViewIds.Add(e.Id);
 

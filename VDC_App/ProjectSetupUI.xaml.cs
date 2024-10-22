@@ -154,6 +154,7 @@ namespace VDC_App
             var scopeBoxCol = new FilteredElementCollector(Doc)
                 .OfCategory(BuiltInCategory.OST_VolumeOfInterest)
                 .Where(e => e.Name.Contains("ScopeBox_"))
+                .OrderBy(e => e.Name)
                 .ToList();
             // bind it to the UI datagrid
             ScopeBoxes.ItemsSource = scopeBoxCol;
@@ -365,7 +366,7 @@ namespace VDC_App
       
         private void CreateDependentViews()
         {
-            // get all vdc scope boxes in project
+            // get all the user selected scopeboxes
             var scopeBoxCol = new UserSelectedItems(ScopeBoxes).SelectedScopeBoxes();
 
             //var scopeBoxAsStr = new List<string>();
@@ -923,7 +924,7 @@ namespace VDC_App
 
                                 //MessageBox.Show("worked");
                                 var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
-                                MessageBox.Show(viewsCol[i].Name + vrTemplate.Name);
+                                //MessageBox.Show(viewsCol[i].Name + vrTemplate.Name);
 
                                 viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
                             }
@@ -1010,7 +1011,6 @@ namespace VDC_App
                 {
                     trade = "FP";
                     CreateSheetType.Items.Remove(ViewTypes.Where(e => e.ViewType == "PadDrawings"));
-                    MessageBox.Show(CreateSheetType.Items.Count.ToString());
 
                     CreateSheetType.Items.Refresh();
                 }
@@ -1080,8 +1080,9 @@ namespace VDC_App
                         
                         // set the sheet category to the Level name (this case I used the Generated level)
                         // Sub cat set to the values of the Sheet View
-                        sheet.LookupParameter("View Category").Set(e.GenLevel.Name);
-                        sheet.LookupParameter("View SubCategory").Set(e.LookupParameter("View SubCategory").AsString());
+                        sheet.LookupParameter("View Category").Set(e.LookupParameter("View SubCategory").AsString());
+                        sheet.LookupParameter("View SubCategory").Set(e.GenLevel.Name);
+
 
 
                         Viewport.Create(Doc, sheet.Id, e.Id, XYZ.Zero);
@@ -1098,11 +1099,7 @@ namespace VDC_App
                 }
 
 
-                var test = new List<string>();
-                foreach (var e in selectedViews)
-                {
-                    test.Add(e.Name);
-                }
+
 
                 //var simpform = new SimpleForm(test);
                 //simpform.Show();

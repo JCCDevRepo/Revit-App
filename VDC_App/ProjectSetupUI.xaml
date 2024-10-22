@@ -109,7 +109,7 @@
             </TabItem>
 
             <!--View Range Tab-->
-            <TabItem Header="View Range Setup" Height="50" >
+            <TabItem Header="View Templates Setup" Height="50" >
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="50"/>
@@ -128,7 +128,7 @@
                         <ColumnDefinition Width="auto"/>
 
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="View Range Creation" FontFamily="Museo Sans 700" FontSize="18" FontWeight="Bold" Foreground="#0069aa"></TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="View Range Template Creation" FontFamily="Museo Sans 700" FontSize="18" FontWeight="Bold" Foreground="#0069aa"></TextBlock>
                     <TextBlock Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Apply Templates to View Types" FontFamily="Museo Sans 700" FontSize="18" FontWeight="Bold" Foreground="#0069aa"></TextBlock>
 
                     <DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Name="ViewRangeSetup" AutoGenerateColumns="False" CanUserSortColumns="False" RowHeaderWidth="15" CanUserResizeRows="False" Height="auto" MaxHeight="400" Width="auto" MaxWidth="250" Margin="20 0 20 20" AlternationCount="2">
