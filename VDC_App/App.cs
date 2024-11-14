@@ -31,11 +31,6 @@ namespace VDC_App
 
 
             // Create PushButton data
-
-            //PushButtonData linkAllDwg = new PushButtonData("VDC_App","DWG Link", assembName, "VDC_App.LinkDwgAll");
-            //PushButtonData linkSelectedDwg = new PushButtonData("test2", "Btn2", assembName, "VDC_App.LinkDwgAll");
-            //PushButtonData create3D = new PushButtonData("test3", "Btn3", assembName, "VDC_App.LinkDwgAll");
-            //PushButtonData viewportsUnpin = new PushButtonData("test4", "Btn4", assembName, "VDC_App.LinkDwgAll");
             PushButtonData linkAllDwg = new PushButtonData("DWG Link - All", "Link All DWG", assembName, "VDC_App.LinkDwgAll");
             PushButtonData linkSelectedDwg = new PushButtonData("DWG Link - Selected", "Select DWG", assembName, "VDC_App.LinkDwgBySelection");
 
@@ -49,6 +44,7 @@ namespace VDC_App
             PushButtonData modifyGrid = new PushButtonData("Modify Grids", "Modify Grids", assembName, "VDC_App.ModifyGridExtents");
             PushButtonData modifyGridCurves = new PushButtonData("Modify Curved Grids", "Modify Curved Grids", assembName, "VDC_App.ModifyGridExtentsManual");
 
+            PushButtonData projectSetup = new PushButtonData("Project Setup", "Project Setup", assembName, "VDC_App.ProjectSetup");
 
 
 
@@ -61,7 +57,7 @@ namespace VDC_App
             viewportsPin.ToolTip = "Pins all viewports on Sheets";
             modifyGrid.ToolTip = "Modify Grid Extents To Fit Within Cropped Annotation Views";
             modifyGridCurves.ToolTip = "Modify Curved Grids Manually Using CurveAreaViews";
-
+            projectSetup.ToolTip = "A Form That Helps With Setting Up a Project";
 
 
             // Apply a bit map image to the buttons
@@ -74,6 +70,7 @@ namespace VDC_App
             viewportsPin.LargeImage = new BitmapImage(new Uri(path + @"\ViewportsPin.png"));
             modifyGrid.LargeImage = new BitmapImage(new Uri(path + @"\ModifyGrid.png"));
             modifyGridCurves.LargeImage = new BitmapImage(new Uri(path + @"\ModifyGrid.png"));
+            projectSetup.LargeImage = new BitmapImage(new Uri(path + @"\ProjectSetup.png"));
 
 
 
@@ -113,6 +110,11 @@ namespace VDC_App
             sbModifyGrid.AddPushButton(modifyGrid);
             sbModifyGrid.AddPushButton(modifyGridCurves);
             panel.AddSeparator();
+
+            panel.AddItem(projectSetup);
+            panel.AddSeparator();
+
+
 
 
             return Result.Succeeded;

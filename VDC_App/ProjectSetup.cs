@@ -520,12 +520,21 @@ public class SheetsName
                     {
                         sheetNumber = Trade + "2" + level + "." + areaNum + ".B";
                         sheetName = levelName + "- Area " + areaNum + " - Beam Penetration Drawing";
+                        break;
                     }
                     // ex: HP.P.LXX.AREA.BP
                     sheetNumber = Trade + $".P.L{level}." + areaNum + ".BP";
                     sheetName = "BEAM PENETRATIONS - " + levelName + " - AREA " + areaNum;
                     break;
 
+                }
+
+            case "CoordSubmittal":
+                {
+
+                    sheetNumber = Trade + "3" + level + "." + areaNum;
+                    sheetName = levelName + "- Area " + areaNum + " - Coordination Submittal Drawing";
+                    break;
                 }
 
             case "Engineering":
@@ -575,8 +584,8 @@ public class SheetsName
             case "PadDrawings":
                 {
                     // ex: HP.LXX.AREA.PADS
-                    sheetNumber = Trade + $".L{level}." + areaNum + "PADS";
-                    sheetName = levelName + "- PLAN - AREA " + areaNum;
+                    sheetNumber = Trade + $".L{level}." + areaNum + ".PADS";
+                    sheetName = "PAD Drawing - " + levelName + "- AREA " + areaNum;
                     break;
 
                 }
@@ -634,6 +643,7 @@ public class SheetsName
                     {
                         sheetNumber = Trade + "2" + level + "." + areaNum + ".S";
                         sheetName = levelName + "- Area " + areaNum + " - Slab Penetration";
+                        break;
                     }
                     // ex: HP.P.LXX.Area.SLV
                     sheetNumber = Trade + $".P.L{level}." + areaNum + ".SLV";
@@ -645,7 +655,7 @@ public class SheetsName
             case "SupplementalSteel":
                 {
                     // ex: HP.S.LXX.Area.SS
-                    sheetNumber = Trade + $"S.L{level}." + areaNum + ".SS";
+                    sheetNumber = Trade + $".S.L{level}." + areaNum + ".SS";
                     sheetName = "SUPPLEMENTAL STEEL - " + levelName + "- AREA " + areaNum;
                     break;
                 }

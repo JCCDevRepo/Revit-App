@@ -132,6 +132,8 @@ namespace VDC_App
                 new ViewTypes { ViewType = "BaseSupports"},
                 new ViewTypes { ViewType = "FieldDrawings"},
                 new ViewTypes { ViewType = "HeadCutBack"},
+                new ViewTypes { ViewType = "CoordSubmittal"},
+
 
 
                 //new ViewTypes { ViewType = "Custom"},
