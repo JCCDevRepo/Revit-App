@@ -1042,17 +1042,17 @@ namespace VDC_App
                 // returns the views based on user's selected levels and type
                 foreach (var e in UserSelected)
                 {
-                    // using view's name strings to select the view types and levels
+
+                    // using collector to return viewplans that matches selected level and view type
                     foreach (var vt in SelectedViewTypes)
                     {
-
                         var viewsCol = new FilteredElementCollector(Doc)
                             .OfClass(typeof(ViewPlan))
-                            .Where(v => v.Name.ToLower().Contains(vt.ViewType.ToLower()))
-                            //.Where(v => v.LookupParameter("View SubCategory"))
-                            .Where(v => v.Name.ToLower().Contains(e.Level.ToLower()))
-                            .Where(v => v.LookupParameter("View SubCategory").AsString().Contains(vt.ViewType))
                             .Cast<ViewPlan>()
+                            .Where(v => v.IsTemplate == false) /* collector returns view templates as well. VT does not have a gen level */
+                            .Where(v => v.GenLevel.Id == e.Id)
+                            .Where(v => v.Name.ToLower().Contains(vt.ViewType.ToLower()))
+                            .Where(v => v.LookupParameter("View SubCategory").AsString().Contains(vt.ViewType))
                             .ToList();
 
                         selectedViews.AddRange(viewsCol);
@@ -1061,7 +1061,7 @@ namespace VDC_App
 
                 }
 
-                //var simpleform = new SimpleForm(selectedViews.Select(v => v.Name));
+                //var simpleform = new SimpleForm(selectedViews.Select(v => v.GenLevel.Id));
                 //simpleform.Show();
 
                 if (selectedViews.Count == 0)
