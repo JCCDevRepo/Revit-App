@@ -146,7 +146,12 @@ namespace VDC_App
                 ViewTypeSetup.Items.Add(v);
                 ApplyTemplateType.Items.Add(v);
                 CreateSheetType.Items.Add(v);
+                
             }
+            // remove working and rcp from sheet's datagrid
+            CreateSheetType.Items.RemoveAt(1);
+            CreateSheetType.Items.RemoveAt(0);
+
 
             ViewTypes = viewsList;
         }
