@@ -37,7 +37,6 @@ namespace VDC_App
 
         private void CbIso_Checked(object sender, RoutedEventArgs e)
         {
-            //EventHandler CbIso_isChecked;
 
         }
 
@@ -75,34 +74,7 @@ namespace VDC_App
 
             var prjInfo = doc.ProjectInformation;
 
-            //TaskDialog.Show("sfa", prjInfo.Number);
 
-            //if (prjInfo.Number == "**VDC to Fill Out**" | prjInfo.BuildingName == "**Trade Name - VDC to Fill Out**")
-            //{
-
-            //    TaskDialog.Show("Missing Info", "Please Fill Out The Project Number And Trade Name in Project Information");
-
-            //    //return Result.Cancelled;
-
-                
-            //}
-
-
-
-            //var getImportGrid = new FilteredElementCollector(doc)
-            //    .OfClass(typeof(ImportInstance))
-            //    // where method to access the import grid under Snooped caterogry > Name
-            //    .Where(s => s.Category.Name.Contains("GRID"))
-            //    .ToList();
-
-
-            //// trying to isolate just one grid 
-            //if (getImportGrid.Count > 1)
-            //{
-            //    TaskDialog.Show("Grid Error", "Please check if grid is imported or Multiple grids are imported");
-
-            //    //return Result.Cancelled;
-            //}
 
             ViewFamilyType viewFamilyType = (from v in new FilteredElementCollector(doc).
                                  OfClass(typeof(ViewFamilyType)).
@@ -121,15 +93,6 @@ namespace VDC_App
                 using (Transaction t = new Transaction(doc, "Create Views"))
                 {
 
-                    //if (prjInfo.Number == "**VDC to Fill Out**" & CbJcc.IsChecked == true) /* | prjInfo.BuildingName == "**Trade Name - VDC to Fill Out**" */
-                    //{
-
-                    //    TaskDialog.Show("Missing Info", "Please Fill Out The Project Number");
-
-                    //    //return Result.Cancelled;
-                    //    t.RollBack();
-
-                    //}
 
 
 
@@ -204,14 +167,6 @@ namespace VDC_App
                             var minYValue = Convert.ToDouble(minYTemp.Remove(minYTemp.IndexOf("."))) - 100;
 
 
-                            //TaskDialog.Show("sdfs", maxXValue);
-                            //TaskDialog.Show("sdfs", maxYValue);
-
-                            //TaskDialog.Show("sdfs", min.ToString());
-
-                            // Set the name of the transaction
-                            // A transaction can be renamed after it has been started
-                            //t.SetName("Create view " + view.Name);
 
                             // Create a new BoundingBoxXYZ to define a 3D rectangular space
                             BoundingBoxXYZ boundingBoxXYZ = new BoundingBoxXYZ();
@@ -245,7 +200,7 @@ namespace VDC_App
                             // If there is another level above this one, use the elevation of that level
                             if (levels.Count > ctr + 1)
                                 zOffset = levels.ElementAt(ctr + 1).Elevation;
-                            // If this is the top level, use an offset of 10 feet
+                            // If this is the top level, use an offset of 50 feet
                             else
                                 zOffset = level.Elevation + 50;
                             boundingBoxXYZ.Max = new XYZ(maxXValue, maxYValue, zOffset);
@@ -337,10 +292,7 @@ namespace VDC_App
 
                         t.Commit();
 
-                        // Open the just-created view
-                        // There cannot be an open transaction when the active view is set
-                        //uidoc.ActiveView = view;
-
+ 
                         ctr++;
                     }
 

@@ -606,13 +606,13 @@ public class SheetsName
                     break;
                 }
 
-            case "ServiceInstall":
-                {
-                    // ex: HP.LXX.Area.Service Abr
-                    sheetNumber = Trade + $".L{level}." + areaNum + ".SVCS";
-                    sheetName = "SERVICE INSTALL - " + levelName + "- AREA " + areaNum;
-                    break;
-                }
+            //case "ServiceInstall":
+            //    {
+            //        // ex: HP.LXX.Area.Service Abr
+            //        sheetNumber = Trade + $".L{level}." + areaNum + ".SVCS";
+            //        sheetName = "SERVICE INSTALL - " + levelName + "- AREA " + areaNum;
+            //        break;
+            //    }
 
             case "Sketches":
                 {

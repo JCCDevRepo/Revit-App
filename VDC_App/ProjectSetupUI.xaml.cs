@@ -23,6 +23,7 @@ using Application = Autodesk.Revit.ApplicationServices.Application;
 using MessageBox = System.Windows.MessageBox;
 using View = Autodesk.Revit.DB.View;
 using System.Text.RegularExpressions;
+using System.Collections.ObjectModel;
 
 
 
@@ -43,7 +44,7 @@ namespace VDC_App
         private List<ElementId> NewViewRangeIds;
         private List<ElementId> NewViewTemplateIds;
 
-        private List<ViewTypes> ViewTypes;
+        private ObservableCollection<ViewTypes> ViewTypes;
         private List<ViewTypes> SelectedViewTypes;
         private List<ViewTypes> SelectedTemplateType;
 
@@ -111,8 +112,9 @@ namespace VDC_App
 
         private void PopulateViewTypes()
         {
+            
             // display view type objects
-            var viewsList = new List<ViewTypes>
+            var viewsList = new ObservableCollection<ViewTypes>
             {
                 new ViewTypes { ViewType = "Working"},
                 new ViewTypes { ViewType = "RCP"},
@@ -127,7 +129,7 @@ namespace VDC_App
                 new ViewTypes { ViewType = "Sketches"},
                 new ViewTypes { ViewType = "WallPens"},
                 new ViewTypes { ViewType = "SupplementalSteel"},
-                new ViewTypes { ViewType = "ServiceInstall"},
+                //new ViewTypes { ViewType = "ServiceInstall"},
                 new ViewTypes { ViewType = "Engineering"},
                 new ViewTypes { ViewType = "BaseSupports"},
                 new ViewTypes { ViewType = "FieldDrawings"},
@@ -142,16 +144,12 @@ namespace VDC_App
 
             foreach (var v in viewsList)
             {
-                //ViewTypeSetup.Items.Add(new { ViewTypes = v});
                 ViewTypeSetup.Items.Add(v);
                 ApplyTemplateType.Items.Add(v);
                 CreateSheetType.Items.Add(v);
-                
-            }
-            // remove working and rcp from sheet's datagrid
-            CreateSheetType.Items.RemoveAt(1);
-            CreateSheetType.Items.RemoveAt(0);
 
+
+            }
 
             ViewTypes = viewsList;
         }
@@ -991,7 +989,7 @@ namespace VDC_App
             }
 
             // check to see if a trade is selected
-            if (FP.IsChecked == false & HD.IsChecked == false & HP.IsChecked == false & PL.IsChecked == false)
+            if (FPsheet.IsChecked == false & HDsheet.IsChecked == false & HPsheet.IsChecked == false & PLsheet.IsChecked == false)
             {
                 MessageBox.Show("Please Select A Trade", "Selection Error", MessageBoxButton.OK);
                 return;
@@ -1022,22 +1020,21 @@ namespace VDC_App
 
                 string trade = null;
 
-                if (FP.IsChecked == true)
+                if (FPsheet.IsChecked == true)
                 {
                     trade = "FP";
                     CreateSheetType.Items.Remove(ViewTypes.Where(e => e.ViewType == "PadDrawings"));
 
-                    CreateSheetType.Items.Refresh();
                 }
-                else if (HD.IsChecked == true)
+                else if (HDsheet.IsChecked == true)
                 {
                     trade = "HD";
                 }
-                else if (HP.IsChecked == true)
+                else if (HPsheet.IsChecked == true)
                 {
                     trade = "HP";
                 }
-                else if (PL.IsChecked == true)
+                else if (PLsheet.IsChecked == true)
                 {
                     trade = "PL";
                 }
@@ -1137,7 +1134,58 @@ namespace VDC_App
         }
         #endregion
 
+        private void FPsheet_Checked(object sender, RoutedEventArgs e)
+        {
+            if (sender is RadioButton radioButton)
+            {
 
+                ResetSheetData();
+
+                var removeViewTypes = new List<string>() 
+                { 
+                    "PadDrawings", 
+                    "PointLoads", 
+                    "SupplementalSteel", 
+                    "Engineering", 
+                    "Pads", 
+                    "BaseSupports"
+                };
+
+                foreach (var i in removeViewTypes)
+                {
+                    var viewTypeIsInList = CreateSheetType.Items.Contains(ViewTypes.FirstOrDefault(v => v.ViewType == i));
+
+                    if (viewTypeIsInList)
+                    {
+                        CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == i));
+                    }
+                }
+                
+
+            }
+        }
+
+        private void HDsheet_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        /// <summary>
+        /// function to reset the datagrid of sheets
+        /// also skips working and rcp types
+        /// </summary>
+        private void ResetSheetData()
+        {
+            CreateSheetType.Items.Clear();
+            foreach (var vt in ViewTypes)
+            {
+                if (vt.ViewType == "Working" || vt.ViewType == "RCP")
+                {
+                    continue;
+                }
+                CreateSheetType.Items.Add(vt);
+            }
+        }
     }
 
 
