@@ -151,6 +151,11 @@ namespace VDC_App
 
             }
 
+            // removes Working and RCP from Sheets creation
+            CreateSheetType.Items.RemoveAt(1);
+            CreateSheetType.Items.RemoveAt(0);
+
+
             ViewTypes = viewsList;
         }
 
@@ -412,19 +417,7 @@ namespace VDC_App
                     //MessageBox.Show(e.Name);
 
                 }
-                //else if (e.GetPrimaryViewId().IntegerValue == -1 & e.GetDependentViewIds().Count() > 1)
-                //else if (UserSelected.Select(i => i.Level.Contains(levStr)).Any() & e.GetPrimaryViewId().IntegerValue != -1)
-                //{
-                //    var www = scopeBoxAsStr.Where(i => i.Equals(scopeboxStr));
-                //    //var www = scopeBoxCol.Select(i => i.Name.  );
-                //    //var www = scopeBoxCol.Where(i => i.Name.Contains(scopeboxStr));
 
-                //    //MessageBox.Show(scopeboxStr);
-
-                //    dependV.Add(www);
-
-
-                //}
             }
 
 
@@ -1138,9 +1131,6 @@ namespace VDC_App
         {
             if (sender is RadioButton radioButton)
             {
-
-                ResetSheetData();
-
                 var removeViewTypes = new List<string>() 
                 { 
                     "PadDrawings", 
@@ -1151,32 +1141,69 @@ namespace VDC_App
                     "BaseSupports"
                 };
 
-                foreach (var i in removeViewTypes)
-                {
-                    var viewTypeIsInList = CreateSheetType.Items.Contains(ViewTypes.FirstOrDefault(v => v.ViewType == i));
-
-                    if (viewTypeIsInList)
-                    {
-                        CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == i));
-                    }
-                }
-                
-
+                ResetSheetData(removeViewTypes);
             }
         }
 
         private void HDsheet_Checked(object sender, RoutedEventArgs e)
         {
+            var removeViewTypes = new List<string>()
+                {
+                    "CoordSubmittal",
+                    "FieldDrawings",
+                    "HeadCutBack",
+                };
 
+            ResetSheetData(removeViewTypes);
+        }
+        private void HPsheet_Checked(object sender, RoutedEventArgs e)
+        {
+            var removeViewTypes = new List<string>()
+                {
+                    "CoordSubmittal",
+                    "FieldDrawings",
+                    "HeadCutBack",
+                };
+
+            ResetSheetData(removeViewTypes);
+        }
+
+        private void PLsheet_Checked(object sender, RoutedEventArgs e)
+        {
+            var removeViewTypes = new List<string>()
+                {
+                    "CoordSubmittal",
+                    "FieldDrawings",
+                    "HeadCutBack",
+                };
+
+            ResetSheetData(removeViewTypes);
+        }
+
+        /// <summary>
+        /// When none selected. Reset the list
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Nonesheet_Checked(object sender, RoutedEventArgs e)
+        {
+            CreateSheetType.Items.Clear();
+            foreach (var vt in ViewTypes)
+            {
+                CreateSheetType.Items.Add(vt);
+            }
+            CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == "Working"));
+            CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == "RCP"));
         }
 
         /// <summary>
         /// function to reset the datagrid of sheets
         /// also skips working and rcp types
         /// </summary>
-        private void ResetSheetData()
+        private void ResetSheetData(List<string> listToRemove)
         {
             CreateSheetType.Items.Clear();
+
             foreach (var vt in ViewTypes)
             {
                 if (vt.ViewType == "Working" || vt.ViewType == "RCP")
@@ -1185,7 +1212,22 @@ namespace VDC_App
                 }
                 CreateSheetType.Items.Add(vt);
             }
+
+            if (listToRemove != null)
+            {
+                foreach (var i in listToRemove)
+                {
+                    var viewTypeIsInList = CreateSheetType.Items.Contains(ViewTypes.FirstOrDefault(v => v.ViewType == i));
+
+                    if (viewTypeIsInList)
+                    {
+                        CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == i));
+                    }
+                }
+            }
         }
+
+
     }
 
 
