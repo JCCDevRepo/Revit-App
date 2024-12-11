@@ -151,7 +151,7 @@
                     <RadioButton Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="2" Name="HDfilters" GroupName="TradesFilter" Margin="80 0 0 0">HD</RadioButton>
                     <RadioButton Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="2" Name="HPfilters" GroupName="TradesFilter" Margin="120 0 0 0">HP</RadioButton>
                     <RadioButton Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="2" Name="PLfilters" GroupName="TradesFilter" Margin="160 0 0 0">PL</RadioButton>
-                    <RadioButton Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="2" Name="NoFilters" GroupName="TradesFilter" Margin="200 0 0 0">None</RadioButton>
+                    <RadioButton Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="2" Name="NoFilters" GroupName="TradesFilter" Margin="200 0 0 0" IsChecked="True">None</RadioButton>
 
                     <Button Grid.Row="4" Grid.Column="0" Height="40" Width="180" Margin="5" Name="vRangeButton" Click="VRangeButton_Click">Create View Range Templates</Button>
                     <Button Grid.Row="4" Grid.Column="1" Height="40" Width="150" Margin="5" Name="vTemplateButton" Click="VTemplateButton_Click">Create View Templates</Button>

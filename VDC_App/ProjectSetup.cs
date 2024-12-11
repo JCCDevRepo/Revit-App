@@ -404,32 +404,42 @@ public class ViewsFromIds
     }
 }
 
+
+/// <summary>
+/// function that apply the view templates with given arguments.
+/// Will need to be be instansiated and iterated.
+/// </summary>
 public class ApplyViewTemplates
 {
     private Document Document { get; set; }
     private string ViewType { get; set; }
     private List<View> ViewTemplates { get; set; }
+    public string Trade { get; set; }
+    private List<ViewPlan> ViewsByCategory { get; set; }
 
     public ApplyViewTemplates(Document doc, string viewType, List<View> viewTemplates)
     {
         Document= doc; 
         ViewType = viewType;
         ViewTemplates = viewTemplates;
+
+
     }
 
-    public void ApplyTemplates()
+    private void GetAllViewsBasedOnCategory()
     {
-        var getViewByCat = new List<ViewPlan>();
+        //ViewsByCategory = new List<ViewPlan>();
+        //var getViewByCat = ViewsByCategory;
         // need to be specific for working views because view name does not equal category name
         if (ViewType == "Working")
         {
-            getViewByCat = new collector(Document, "Coordination").GetViewType().ToList();
+            ViewsByCategory = new collector(Document, "Coordination").GetViewType().ToList();
 
         }
         else if (ViewType == "RCP")
         {
             // RCP needs to separated because is it not a sheet and does not contain dependents
-            getViewByCat = new collector(Document, ViewType).GetViewType().ToList();
+            ViewsByCategory = new collector(Document, ViewType).GetViewType().ToList();
 
         }
         else
@@ -437,21 +447,75 @@ public class ApplyViewTemplates
             // Select only the parent views of sheets by " - 0"
             // the children views inherit the template from the parent.
             // children do not get process = more efficient
-            getViewByCat = new collector(Document, ViewType).GetViewType()
+            ViewsByCategory = new collector(Document, ViewType).GetViewType()
                 .Where(e => e.Name.Contains("- 0"))
                 .ToList();
-            
+
         }
+
+        //return ViewsByCategory;
+    }
+
+    
+    public void ApplyTemplates()
+    {
+        //var getViewByCat = new List<ViewPlan>();
+        //// need to be specific for working views because view name does not equal category name
+        //if (ViewType == "Working")
+        //{
+        //    getViewByCat = new collector(Document, "Coordination").GetViewType().ToList();
+
+        //}
+        //else if (ViewType == "RCP")
+        //{
+        //    // RCP needs to separated because is it not a sheet and does not contain dependents
+        //    getViewByCat = new collector(Document, ViewType).GetViewType().ToList();
+
+        //}
+        //else
+        //{
+        //    // Select only the parent views of sheets by " - 0"
+        //    // the children views inherit the template from the parent.
+        //    // children do not get process = more efficient
+        //    getViewByCat = new collector(Document, ViewType).GetViewType()
+        //        .Where(e => e.Name.Contains("- 0"))
+        //        .ToList();
+
+        //}
+
+        GetAllViewsBasedOnCategory();
 
         var getViewTemplate = ViewTemplates.Where(i => i.Name.Contains(ViewType)).FirstOrDefault();
 
-        if (getViewByCat.Count < 1 || getViewTemplate == null)
+
+        if (ViewsByCategory.Count < 1 || getViewTemplate == null)
         {
             MessageBox.Show($"Missing Views Or View Templates\nAffected View: {ViewType}");
             return;
         }
 
-        foreach (var v in getViewByCat)
+        foreach (var v in ViewsByCategory)
+        {
+
+            v.ApplyViewTemplateParameters(getViewTemplate);
+        }
+    }
+
+    public void ApplyTradeFilters()
+    {
+        GetAllViewsBasedOnCategory();
+
+        var getViewTemplate = ViewTemplates.Where(i => i.Name.Contains(Trade)).FirstOrDefault();
+
+
+
+        if (ViewsByCategory.Count < 1 || getViewTemplate == null)
+        {
+            MessageBox.Show($"Missing Views Or View Templates\nAffected View: {ViewType}");
+            return;
+        }
+
+        foreach (var v in ViewsByCategory)
         {
 
             v.ApplyViewTemplateParameters(getViewTemplate);

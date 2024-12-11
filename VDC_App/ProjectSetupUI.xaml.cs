@@ -833,18 +833,17 @@ namespace VDC_App
             }
 
             ApplyViewTemplate();
+            ApplyTradesFilters();
+
         }
 
         private void ApplyViewTemplate()
         {
             var templateCol = new collector(Doc, "vdc_visibilityoverride").GetTemplatesList();
 
-            //var getAllViews = new collector(Doc, "")
 
             try
             {
-                //var simpForm = new SimpleForm(temp);
-                //simpForm.ShowDialog();
 
                 using (Transaction t = new Transaction(Doc))
                 {
@@ -862,8 +861,68 @@ namespace VDC_App
             {
                 MessageBox.Show(ex.Message);
             }
-            
-            
+
+
+
+        }
+
+        private void ApplyTradesFilters()
+        {
+            string tradeSelected = null;
+
+            if (FPfilters.IsChecked == true)
+            {
+                tradeSelected = "FP";
+            }
+            else if (HDfilters.IsChecked == true)
+            {
+                tradeSelected = "HD";
+
+            }
+            else if (HPfilters.IsChecked == true)
+            {
+                tradeSelected = "HP";
+
+            }
+            else if (PLfilters.IsChecked == true)
+            {
+                tradeSelected = "PL";
+
+            }
+            else
+            {
+                return;
+            }
+
+            var viewFiltersCol = new collector(Doc, "vdc_view filters").GetTemplatesList()
+                .Where(e => e.Name.Contains(tradeSelected) && e.Name.Contains("2D"))
+                .ToList();
+
+            try
+            {
+
+                using (Transaction t = new Transaction(Doc))
+                {
+                    t.Start("Apply View Filters");
+                    foreach (var e in SelectedTemplateType)
+                    {
+                        var applyTemplateClass = new ApplyViewTemplates(Doc, e.ViewType, viewFiltersCol);
+                        applyTemplateClass.Trade = tradeSelected;
+                        applyTemplateClass.ApplyTradeFilters();
+
+                    }
+
+                    t.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            //var simpleform = new SimpleForm(viewFiltersCol.Select(e => e.Name));
+            //simpleform.ShowDialog();
+
         }
 
         private void vRangeApplyButton_Click(object sender, RoutedEventArgs e)
@@ -876,7 +935,6 @@ namespace VDC_App
             }
 
             ApplyViewRangeTemplates();
-            
         }
 
         private void ApplyViewRangeTemplates()
@@ -957,8 +1015,10 @@ namespace VDC_App
                 MessageBox.Show(ex.Message);
             }
 
-            
+
         }
+
+
 
         #endregion
 
@@ -1016,7 +1076,6 @@ namespace VDC_App
                 if (FPsheet.IsChecked == true)
                 {
                     trade = "FP";
-                    CreateSheetType.Items.Remove(ViewTypes.Where(e => e.ViewType == "PadDrawings"));
 
                 }
                 else if (HDsheet.IsChecked == true)
