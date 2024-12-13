@@ -211,6 +211,8 @@ namespace VDC_App
                 CreateViews();
                 CreateDependentViews();
 
+                MessageBox.Show("Views Have Been Created", "Views Creation", MessageBoxButton.OK,MessageBoxImage.Information);
+
             }
 
 
@@ -381,14 +383,6 @@ namespace VDC_App
             // get all the user selected scopeboxes
             var scopeBoxCol = new UserSelectedItems(ScopeBoxes).SelectedScopeBoxes();
 
-            //var scopeBoxAsStr = new List<string>();
-            //foreach (var e in scopeBoxCol) 
-            //{
-            //    var sbSuffix = Regex.Match(e.Name, @"_0*(\d+$)").Groups[1].Value;
-            //    scopeBoxAsStr.Add(sbSuffix);
-            //}
-            
-
             var sheetCol = new FilteredElementCollector(Doc)
                 .OfClass(typeof(View))
                 .Where(e => e.Name.ToLower().Contains("sheet_"))
@@ -496,17 +490,11 @@ namespace VDC_App
                 MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
             }
 
-            //var simpF = new SimpleForm(test);
-            //simpF.Show();
-
-
-
-
 
             CreateViewRangeTemplates();
 
+            MessageBox.Show("View Range Templates Created", "View Template Creation", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            //this.Close();
         }
 
         private void CreateViewRangeTemplates()
@@ -543,12 +531,10 @@ namespace VDC_App
 
                         var templatesChecking = new collector(Doc, "vdc_viewrange").GetTemplatesList()
                             .Where(i => i.Name.Contains(levName)).FirstOrDefault();
-                        //MessageBox.Show(templatesList.ToString());
-
 
                         if ( templatesChecking != null )
                         {
-                            MessageBox.Show($"Duplicate Template detected: {levName}\nTemplate Creation Skipped");
+                            //MessageBox.Show($"Duplicate Template detected: {levName}\nTemplate Creation Skipped");
                             continue;
                         }
 
@@ -606,9 +592,6 @@ namespace VDC_App
                 App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(OnViewRangeTemplateChanged);
 
 
-                //var simp = new SimpleForm(NewViewRangeIds);
-                //simp.ShowDialog();
-
             }
             catch (Exception ex)
             {
@@ -631,7 +614,7 @@ namespace VDC_App
             // this method is needed because when templates are created, a "copy" is added to the name
             try
             {
-                // collector depends on w
+                
                 var vRangetemplatesList = new collector(Doc, "vdc_viewrange").GetTemplatesList()
                     .Where(e => e.Name.Contains("Copy"))
                     .ToList();
@@ -649,7 +632,6 @@ namespace VDC_App
                         var indexOfCopy = originalName.IndexOf("Copy");
 
                         e.Name = originalName.Remove(indexOfCopy - 1);
-                        //MessageBox.Show(e.Name);
 
                     }
 
@@ -664,15 +646,9 @@ namespace VDC_App
                         var indexOfCopy = originalName.IndexOf("Copy");
 
                         e.Name = originalName.Remove(indexOfCopy - 1);
-                        //MessageBox.Show(e.Name);
-
                     }
                 }
-                //else
-                //{
-                //    MessageBox.Show("Template Error", "No View Range Templates Found");
 
-                //}
 
             }
             catch 
@@ -681,8 +657,7 @@ namespace VDC_App
                 
 
             }
-            // get the viewrange templates list
-            // select only the ones with "copy" in the name
+
 
 
         }
@@ -696,6 +671,8 @@ namespace VDC_App
         private void VTemplateButton_Click(object sender, RoutedEventArgs e)
         {
             CreateViewTemplates();
+            MessageBox.Show("View Templates Created", "View Templates Creation", MessageBoxButton.OK, MessageBoxImage.Information);
+
         }
 
         private void CreateViewTemplates()
@@ -704,10 +681,6 @@ namespace VDC_App
             NewViewTemplateIds = new List<ElementId>();
             // event that returns the newly created element ids
             App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(OnViewTemplateChanged);
-
-            // Transaction goes here
-
-
 
 
             using (Transaction t = new Transaction(Doc))
@@ -822,7 +795,14 @@ namespace VDC_App
         }
         #endregion
 
+
         #region Apply View Templates
+        /// <summary>
+        /// Apply View type templates and trade specific view filters templates
+        /// Based on user selected view types
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void vTemplateApplyButton_Click(object sender, RoutedEventArgs e)
         {
             SelectedTemplateType = new UserSelectedItems(ApplyTemplateType).SelectedViewTypes();
@@ -920,9 +900,6 @@ namespace VDC_App
                 MessageBox.Show(ex.Message);
             }
 
-            //var simpleform = new SimpleForm(viewFiltersCol.Select(e => e.Name));
-            //simpleform.ShowDialog();
-
         }
 
         private void vRangeApplyButton_Click(object sender, RoutedEventArgs e)
@@ -931,6 +908,13 @@ namespace VDC_App
             if (SelectedTemplateType.Count == 0)
             {
                 MessageBox.Show("Please Select A View Template Type", "Selection Error", MessageBoxButton.OK);
+                return;
+            }
+
+            UserSelected = new UserSelectedItems(ViewRangeSetup).SelectedLevels();
+            if (UserSelected.Count == 0)
+            {
+                MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
                 return;
             }
 
@@ -947,15 +931,9 @@ namespace VDC_App
 
                     var templateCol = new collector(Doc, "vdc_viewrange").GetTemplatesList();
 
-                    var viewsCol = new FilteredElementCollector(Doc)
-                        .OfClass(typeof(ViewPlan))
-                        .Where(e => e.LookupParameter("View SubCategory").HasValue)
-                        .Where(e => e.LookupParameter("View Category").AsString() != "VDC")
-                        .Cast<ViewPlan>()
-                        .ToList();
 
-                    //var path = "C:\\Users\\tdang\\Desktop\\test.txt";
-                    //File.WriteAllLines(path, temp);
+                    var viewsCol = new List<ViewPlan>();
+
 
                     // null check 
                     if (templateCol.Count == 0)
@@ -964,49 +942,88 @@ namespace VDC_App
                         return;
                     }
 
-                    if (viewsCol.Count == 0)
-                    {
-                        MessageBox.Show("Please check if Views exist or View's Categories are Named Correctly.");
-                        return;
-                    }
 
                     foreach (var e in SelectedTemplateType)
                     {
-                        var i = 0;
-                        while (i < viewsCol.Count)
+
+
+                        if (e.ViewType.Contains("Working"))
+                        { 
+                            var workingViewsCol = new FilteredElementCollector(Doc)
+                                .OfClass(typeof(ViewPlan))
+                                .Where(v => v.LookupParameter("View SubCategory").HasValue)
+                                .Where(v => v.LookupParameter("View SubCategory").AsString().Contains("Coordination") | v.LookupParameter("View SubCategory").AsString().ToLower().Contains("working"))
+                                .Cast<ViewPlan>()
+                                .ToList();
+
+                            viewsCol.AddRange(workingViewsCol);
+                        }
+                        else if (e.ViewType.Contains("RCP"))
                         {
-                            // matches the view sub cat with the name of the selected view type.
-                            // also checks if the sheet names contain - 0 (child views are not need because they inherit)
-                            if (viewsCol[i].LookupParameter("View SubCategory").AsString() == e.ViewType & viewsCol[i].Name.Contains("- 0"))
+                            var rcpViewsCol = new FilteredElementCollector(Doc)
+                                .OfClass(typeof(ViewPlan))
+                                .Where(v => v.LookupParameter("View SubCategory").HasValue && v.LookupParameter("View SubCategory").AsString().Contains("RCP"))
+                                .Cast<ViewPlan>()
+                                .ToList();
+
+                            viewsCol.AddRange(rcpViewsCol);
+                        }
+                        else
+                        {
+                            var viewCollectorPerType = new FilteredElementCollector(Doc)
+                            .OfClass(typeof(ViewPlan))
+                            .Where(v => v.LookupParameter("View SubCategory").HasValue && v.LookupParameter("View SubCategory").AsString().Contains(e.ViewType))
+                            .Cast<ViewPlan>()
+                            .ToList();
+
+                            viewsCol.AddRange(viewCollectorPerType);
+                        }
+
+
+
+                    }
+
+                    // linq to compare the list of collected views vs list of the user's selected levels from UI.
+                    // returns only the views thats associated with the levels that the user selected.
+                    var matchUsersSelectedLevels = viewsCol.Where(viewscol => UserSelected.Any(userSelected => userSelected.Level.Contains(viewscol.GenLevel.Name))).ToList();
+
+
+                    foreach (var e in matchUsersSelectedLevels)
+                    {
+                        // need this check because a view range template for the user selected level might be missing
+                        var templateCheck = templateCol.Where(i => i.Name.Contains(e.GenLevel.Name)).ToList();
+                        if (templateCheck.Count == 0)
+                        {
+                            MessageBox.Show($"Missing View Range Template For Level:\n{e.GenLevel.Name}");
+                            return;
+                        }
+
+                        var viewSubCatStr = e.LookupParameter("View SubCategory").AsString();
+                        if (e.Name.Contains("- 0") || viewSubCatStr.ToLower().Contains("coordination") || viewSubCatStr.ToLower().Contains("working"))
+                        {
+
+                            // compare view iteration gen level with the template's name.
+                            // if it exists, apply the template to the view
+                            var vrTemplate = templateCol.Where(v => v.Name.Contains(e.GenLevel.Name)).FirstOrDefault();
+
+                            if (vrTemplate != null)
                             {
-
-                                //MessageBox.Show("worked");
-                                var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
-                                //MessageBox.Show(viewsCol[i].Name + vrTemplate.Name);
-
-                                viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
-                            }
-                            else if (viewsCol[i].LookupParameter("View SubCategory").AsString() == "Coordination")
-                            {
-                                var vrTemplate = templateCol.Where(v => v.Name.Contains(viewsCol[i].GenLevel.Name)).First();
-                                viewsCol[i].ApplyViewTemplateParameters(vrTemplate);
+                                e.ApplyViewTemplateParameters(vrTemplate);
 
                             }
-                            else if (e.ViewType == "RCP")
-                            {
-                                MessageBox.Show("RCPs Do Not Need View Ranges To Be Applied");
-                                return;
-                            }
-                            //else
-                            //{
-                            //    MessageBox.Show($"View Subcategory did not matched the view type\n Please double check View Category Name or View Name\n" +
-                            //        $"{viewsCol[i].Name}\n{e.ViewType}");
-                            //    return;
-                            //}
 
-                            i++;
+                            
+
+                        }
+
+                        else if (e.LookupParameter("View SubCategory").AsString() == "RCP")
+                        {
+                            //MessageBox.Show("RCPs Do Not Need View Ranges To Be Applied");
+                            //return;
+                            continue;
                         }
                     }
+
                     t.Commit();
                 }
             }
