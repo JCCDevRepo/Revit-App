@@ -22,7 +22,6 @@ namespace VDC_App
             String tabName = "VDC";
             application.CreateRibbonTab(tabName);
 
-            
 
             // Create a panel
             RibbonPanel panel = application.CreateRibbonPanel(tabName, "VDC 1.2");
