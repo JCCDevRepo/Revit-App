@@ -931,10 +931,6 @@ namespace VDC_App
 
                     var templateCol = new collector(Doc, "vdc_viewrange").GetTemplatesList();
 
-
-                    var viewsCol = new List<ViewPlan>();
-
-
                     // null check 
                     if (templateCol.Count == 0)
                     {
@@ -942,6 +938,7 @@ namespace VDC_App
                         return;
                     }
 
+                    var viewsCol = new List<ViewPlan>();
 
                     foreach (var e in SelectedTemplateType)
                     {
@@ -1088,26 +1085,6 @@ namespace VDC_App
                     .Cast<FamilySymbol>()
                     .FirstOrDefault();
 
-                string trade = null;
-
-                if (FPsheet.IsChecked == true)
-                {
-                    trade = "FP";
-
-                }
-                else if (HDsheet.IsChecked == true)
-                {
-                    trade = "HD";
-                }
-                else if (HPsheet.IsChecked == true)
-                {
-                    trade = "HP";
-                }
-                else if (PLsheet.IsChecked == true)
-                {
-                    trade = "PL";
-                }
-
                 var selectedViews = new List<ViewPlan>();
 
                 // returns the views based on user's selected levels and type
@@ -1145,7 +1122,32 @@ namespace VDC_App
                 {
                     t.Start("Create Sheets");
 
+                    string trade = null;
 
+                    if (FPsheet.IsChecked == true)
+                    {
+                        trade = "FP";
+                        Doc.ProjectInformation.BuildingName = "FIRE PROTECTION";
+
+                    }
+                    else if (HDsheet.IsChecked == true)
+                    {
+                        trade = "HD";
+                        Doc.ProjectInformation.BuildingName = "HVAC-DUCT";
+
+                    }
+                    else if (HPsheet.IsChecked == true)
+                    {
+                        trade = "HP";
+                        Doc.ProjectInformation.BuildingName = "HVAC-PIPE";
+
+                    }
+                    else if (PLsheet.IsChecked == true)
+                    {
+                        trade = "PL";
+                        Doc.ProjectInformation.BuildingName = "PLUMBING";
+
+                    }
 
                     foreach (var e in selectedViews)
                     {
@@ -1261,16 +1263,17 @@ namespace VDC_App
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Nonesheet_Checked(object sender, RoutedEventArgs e)
-        {
-            CreateSheetType.Items.Clear();
-            foreach (var vt in ViewTypes)
-            {
-                CreateSheetType.Items.Add(vt);
-            }
-            CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == "Working"));
-            CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == "RCP"));
-        }
+        //private void Nonesheet_Checked(object sender, RoutedEventArgs e)
+        //{
+        //    CreateSheetType.Items.Clear();
+        //    foreach (var vt in ViewTypes)
+        //    {
+        //        CreateSheetType.Items.Add(vt);
+        //    }
+        //    CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == "Working"));
+        //    CreateSheetType.Items.Remove(ViewTypes.FirstOrDefault(v => v.ViewType == "RCP"));
+        //    Doc.ProjectInformation.BuildingName = "**Trade Name - VDC to Fill Out**";
+        //}
 
         /// <summary>
         /// function to reset the datagrid of sheets
