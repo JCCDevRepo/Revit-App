@@ -812,12 +812,27 @@ namespace VDC_App
                 return;
             }
 
-            ApplyViewTemplate();
-            ApplyTradesFilters();
+            // setup these method calls this way so it can return status values.
+            // used those values for the completion popups.
+            // ApplyTradesFilters only returns a value if the user selected a trades checkbox.
+            var applyTemplates = ApplyViewTemplate();
+            var applyFilters = ApplyTradesFilters();
+
+            if (applyTemplates == "successful" & applyFilters == "successful")
+            {
+                MessageBox.Show("Templates And Filters Applied", "View Templates", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            }
+            else if (applyTemplates == "successful")
+            {
+                MessageBox.Show("Templates Applied", "View Templates", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            }
+          
 
         }
 
-        private void ApplyViewTemplate()
+        private string ApplyViewTemplate()
         {
             var templateCol = new collector(Doc, "vdc_visibilityoverride").GetTemplatesList();
 
@@ -834,19 +849,28 @@ namespace VDC_App
 
                     }
 
-                    t.Commit();
+                    var commitStatus = t.Commit();
+                    if (commitStatus == TransactionStatus.Committed)
+                    {
+                        return "successful";
+                    }
+                    else
+                    {
+                        return "failed";
+                    }
                 }
             }
             catch( Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                return "failed";
             }
 
 
 
         }
 
-        private void ApplyTradesFilters()
+        private string ApplyTradesFilters()
         {
             string tradeSelected = null;
 
@@ -871,7 +895,7 @@ namespace VDC_App
             }
             else
             {
-                return;
+                return "noselection";
             }
 
             var viewFiltersCol = new collector(Doc, "vdc_view filters").GetTemplatesList()
@@ -892,12 +916,22 @@ namespace VDC_App
 
                     }
 
-                    t.Commit();
+                    var commitStatus = t.Commit();
+                    if (commitStatus == TransactionStatus.Committed)
+                    {
+                        return "successful";
+                    }
+                    else
+                    {
+                        return "failed";
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                return "failed";
+
             }
 
         }
@@ -1021,14 +1055,20 @@ namespace VDC_App
                         }
                     }
 
-                    t.Commit();
+
+                    var status = t.Commit();
+
+                    if (status == TransactionStatus.Committed)
+                    {
+                        MessageBox.Show("View Ranges Applied", "View Range", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-
 
         }
 
