@@ -40,9 +40,6 @@ namespace VDC_App
         private List<LevelsElevations> UserSelected;
 
         private List<ElementId> NewViewIds;
-        //private List<ElementId> CreatedViewIds;
-        private List<ElementId> NewViewRangeIds;
-        private List<ElementId> NewViewTemplateIds;
 
         private ObservableCollection<ViewTypes> ViewTypes;
         private List<ViewTypes> SelectedViewTypes;
@@ -488,12 +485,12 @@ namespace VDC_App
             if (UserSelected.Count == 0)
             {
                 MessageBox.Show("Please Select A Level", "Selection Error", MessageBoxButton.OK);
+                return;
             }
 
 
             CreateViewRangeTemplates();
 
-            MessageBox.Show("View Range Templates Created", "View Template Creation", MessageBoxButton.OK, MessageBoxImage.Information);
 
         }
 
@@ -501,13 +498,11 @@ namespace VDC_App
         {
             try
             {
-                NewViewRangeIds = new List<ElementId>();
-                App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(OnViewRangeTemplateChanged);
 
                 using (Transaction t = new Transaction(Doc))
                 {
 
-                    t.Start("Create View Template");
+                    t.Start("Create View Range Template");
 
 
                     var viewRangeCatId = new List<ElementId>
@@ -584,29 +579,27 @@ namespace VDC_App
 
                     RenameViewTemplates();
 
-                    t.Commit();
+                    var commitStatus = t.Commit();
 
+                    if (commitStatus == TransactionStatus.Committed)
+                    {
+                        MessageBox.Show("View Range Templates Created", "View Template Creation", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    }
 
                 }
 
-                App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(OnViewRangeTemplateChanged);
 
 
             }
             catch (Exception ex)
             {
                 TaskDialog.Show("Error Detected", ex.ToString());
-
             }
 
         }
 
-        private void OnViewRangeTemplateChanged(object sender, DocumentChangedEventArgs e)
-        {
-            
-            NewViewRangeIds.AddRange(e.GetAddedElementIds());
 
-        }
 
 
         private void RenameViewTemplates()
@@ -671,25 +664,18 @@ namespace VDC_App
         private void VTemplateButton_Click(object sender, RoutedEventArgs e)
         {
             CreateViewTemplates();
-            MessageBox.Show("View Templates Created", "View Templates Creation", MessageBoxButton.OK, MessageBoxImage.Information);
 
         }
 
         private void CreateViewTemplates()
         {
 
-            NewViewTemplateIds = new List<ElementId>();
-            // event that returns the newly created element ids
-            App.DocumentChanged += new EventHandler<DocumentChangedEventArgs>(OnViewTemplateChanged);
+
 
 
             using (Transaction t = new Transaction(Doc))
             {
                 t.Start("Create View Templates");
-
-
-                //var simpform = new SimpleForm(ViewTypes);
-                //simpform.ShowDialog();
 
                 var excludeIdsList = new List<ElementId>
                 {
@@ -708,7 +694,7 @@ namespace VDC_App
                 foreach (var e in ViewTypes)
                 {
                     // duplicate template checking
-                    var templatesChecking = new collector(Doc, "vdc_template").GetTemplatesList()
+                    var templatesChecking = new collector(Doc, "vdc_visibilityoverride").GetTemplatesList()
                         .Where(i => i.Name.Contains(e.ViewType)).FirstOrDefault();
 
                     if (templatesChecking != null)
@@ -782,17 +768,15 @@ namespace VDC_App
 
                 RenameViewTemplates();
 
-                t.Commit();
-                App.DocumentChanged -= new EventHandler<DocumentChangedEventArgs>(OnViewTemplateChanged);
-
+                var commitStatus = t.Commit();
+                if (commitStatus == TransactionStatus.Committed)
+                {
+                    MessageBox.Show("View Templates Created", "View Templates Creation", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
 
         }
-        private void OnViewTemplateChanged(object sender, DocumentChangedEventArgs e)
-        {
-            //MessageBox.Show(i.ToString());
-            NewViewTemplateIds.AddRange(e.GetAddedElementIds());
-        }
+
         #endregion
 
 
@@ -1056,9 +1040,9 @@ namespace VDC_App
                     }
 
 
-                    var status = t.Commit();
+                    var commitStatus = t.Commit();
 
-                    if (status == TransactionStatus.Committed)
+                    if (commitStatus == TransactionStatus.Committed)
                     {
                         MessageBox.Show("View Ranges Applied", "View Range", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
@@ -1222,20 +1206,13 @@ namespace VDC_App
 
 
                     }
+                    var commitStatus = t.Commit();
 
-
-
-
-                    t.Commit();
+                    if (commitStatus == TransactionStatus.Committed)
+                    {
+                        MessageBox.Show("Sheets Created", "Sheets Creation", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
                 }
-
-
-
-
-                //var simpform = new SimpleForm(test);
-                //simpform.Show();
-
-
 
             }
             catch (Exception ex)
