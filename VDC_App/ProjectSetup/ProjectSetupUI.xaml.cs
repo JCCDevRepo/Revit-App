@@ -126,7 +126,7 @@ namespace VDC_App
                 new ViewTypes { ViewType = "Sketches"},
                 new ViewTypes { ViewType = "WallPens"},
                 new ViewTypes { ViewType = "SupplementalSteel"},
-                //new ViewTypes { ViewType = "ServiceInstall"},
+                new ViewTypes { ViewType = "ISO"},
                 new ViewTypes { ViewType = "Engineering"},
                 new ViewTypes { ViewType = "BaseSupports"},
                 new ViewTypes { ViewType = "FieldDrawings"},
@@ -265,9 +265,11 @@ namespace VDC_App
 
             var vDuplicateCheck = new FilteredElementCollector(Doc)
                 .OfClass(typeof(ViewPlan))
+                .Cast<ViewPlan>()
+                .Where(e => e.IsTemplate == false)
+                .Where(e => e.LookupParameter("View Category").HasValue)
                 .Select(e => e.Name)
                 .ToList();
-
 
             NewViewIds = new List<ElementId>();
             // event that returns the newly created element ids
@@ -1096,19 +1098,6 @@ namespace VDC_App
         {
             try
             {
-
-                var titleBlock48 = new FilteredElementCollector(Doc)
-                    .OfClass(typeof(FamilySymbol))
-                    .Where(tb => tb.Name.Contains("36x48"))
-                    .Cast<FamilySymbol>()
-                    .FirstOrDefault();
-
-                var titleBlock72 = new FilteredElementCollector(Doc)
-                    .OfClass(typeof(FamilySymbol))
-                    .Where(tb => tb.Name.Contains("72x96"))
-                    .Cast<FamilySymbol>()
-                    .FirstOrDefault();
-
                 var selectedViews = new List<ViewPlan>();
 
                 // returns the views based on user's selected levels and type
@@ -1133,8 +1122,7 @@ namespace VDC_App
 
                 }
 
-                //var simpleform = new SimpleForm(selectedViews.Select(v => v.GenLevel.Id));
-                //simpleform.Show();
+
 
                 if (selectedViews.Count == 0)
                 {
@@ -1147,10 +1135,15 @@ namespace VDC_App
                     t.Start("Create Sheets");
 
                     string trade = null;
+                    string titleBlockType48 = "36x48_JCC";
+                    string titleBlockType96 = "72x96_JCC";
+
 
                     if (FPsheet.IsChecked == true)
                     {
                         trade = "FP";
+                        titleBlockType48 = "36x48_JCC_FP";
+                        titleBlockType96 = "72x96_JCC_FP";
                         Doc.ProjectInformation.BuildingName = "FIRE PROTECTION";
 
                     }
@@ -1173,6 +1166,19 @@ namespace VDC_App
 
                     }
 
+
+                    var titleBlock48 = new FilteredElementCollector(Doc)
+                        .OfClass(typeof(FamilySymbol))
+                        .Where(tb => tb.Name.Contains(titleBlockType48))
+                        .Cast<FamilySymbol>()
+                        .FirstOrDefault();
+
+                    var titleBlock96 = new FilteredElementCollector(Doc)
+                        .OfClass(typeof(FamilySymbol))
+                        .Where(tb => tb.Name.Contains(titleBlockType96))
+                        .Cast<FamilySymbol>()
+                        .FirstOrDefault();
+
                     foreach (var e in selectedViews)
                     {
                         // logic to rename sheet type and trade
@@ -1183,7 +1189,7 @@ namespace VDC_App
                         var regex = Regex.IsMatch(e.Name, @"- 0+$");
                         if (regex == true || e.Name.ToLower().Contains("- overall"))
                         {
-                            sheet = ViewSheet.Create(Doc, titleBlock72.Id);
+                            sheet = ViewSheet.Create(Doc, titleBlock96.Id);
                         }
                         else
                         {
@@ -1217,7 +1223,17 @@ namespace VDC_App
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                if (ex.Message.Contains("Sheet number is already in use"))
+                {
+                    MessageBox.Show("Sheets Already Exist");
+
+                }
+                else
+                {
+                    MessageBox.Show(ex.Message);
+
+                }
+
             }
         }
         #endregion
@@ -1233,7 +1249,8 @@ namespace VDC_App
                     "SupplementalSteel", 
                     "Engineering", 
                     "Pads", 
-                    "BaseSupports"
+                    "BaseSupports",
+                    "ISO"
                 };
 
                 ResetSheetData(removeViewTypes);

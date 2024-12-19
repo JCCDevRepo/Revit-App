@@ -583,7 +583,7 @@ public class SheetsName
                     if(Trade == "FP")
                     {
                         sheetNumber = Trade + "2" + level + "." + areaNum + ".B";
-                        sheetName = levelName + "- Area " + areaNum + " - Beam Penetration Drawing";
+                        sheetName = levelName + "- AREA " + areaNum + " - BEAM PENETRATIONS DRAWING";
                         break;
                     }
                     // ex: HP.P.LXX.AREA.BP
@@ -597,7 +597,7 @@ public class SheetsName
                 {
 
                     sheetNumber = Trade + "3" + level + "." + areaNum;
-                    sheetName = levelName + "- Area " + areaNum + " - Coordination Submittal Drawing";
+                    sheetName = levelName + "- AREA " + areaNum + " - COORDINATION SUBMITTAL DRAWING";
                     break;
                 }
 
@@ -605,7 +605,7 @@ public class SheetsName
                 {
                     // ex: HP.XX.AREA.ENG
                     sheetNumber = Trade + $".{level}." + areaNum + ".ENG";
-                    sheetName = "Engineering - " + levelName + "- AREA " + areaNum;
+                    sheetName = "ENGINEERING - " + levelName + "- AREA " + areaNum;
                     break;
                 }
 
@@ -614,11 +614,11 @@ public class SheetsName
                     if(Trade == "FP")
                     {
                         sheetNumber = Trade + "5" + level + "." + areaNum;
-                        sheetName = levelName + "- Area " + areaNum + " - Field Drawing";
+                        sheetName = levelName + "- AREA " + areaNum + " - FIELD DRAWING";
                         break;
                     }
                     sheetNumber = Trade + $".{level}." + areaNum + ".FIELD";
-                    sheetName = "Field Drawing - " + levelName + "- AREA " + areaNum;
+                    sheetName = "FIELD DRAWING - " + levelName + "- AREA " + areaNum;
                     break;
                 }
 
@@ -628,7 +628,7 @@ public class SheetsName
                     if (Trade == "FP")
                     {
                         sheetNumber = Trade + "4" + level + "." + areaNum;
-                        sheetName = levelName + "- Area " + areaNum + " - Hanger Drawing";
+                        sheetName = levelName + "- AREA " + areaNum + " - HANGER DRAWING";
                         break;
                     }
                     // ex: HP.LXX.AREA.AP
@@ -641,7 +641,7 @@ public class SheetsName
                 {
 
                     sheetNumber = Trade + "6" + level + "." + areaNum;
-                    sheetName = levelName + "- Area " + areaNum + " - Head Cutback Drawing";
+                    sheetName = levelName + "- AREA " + areaNum + " - HEAD CUTBACK DRAWING";
                     break;
                 }
 
@@ -649,7 +649,7 @@ public class SheetsName
                 {
                     // ex: HP.LXX.AREA.PADS
                     sheetNumber = Trade + $".L{level}." + areaNum + ".PADS";
-                    sheetName = "PAD Drawing - " + levelName + "- AREA " + areaNum;
+                    sheetName = "PAD DRAWING - " + levelName + "- AREA " + areaNum;
                     break;
 
                 }
@@ -658,14 +658,14 @@ public class SheetsName
                 {
                     // ex: HP.LXX.AREA.LOADS
                     sheetNumber = Trade + $".L{level}." + areaNum + ".LOADS";
-                    sheetName = "Point Loads - " + levelName + "- AREA " + areaNum;
+                    sheetName = "POINT LOADS - " + levelName + "- AREA " + areaNum;
                     break;
                 }
 
             case "Risers":
                 {
                     // ex: HP.Riser-XX.Area
-                    sheetNumber = Trade + $".Riser.{level}." + areaNum;
+                    sheetNumber = Trade + $".RISER.{level}." + areaNum;
                     sheetName = "RISERS - " + levelName + "- AREA " + areaNum;
                     break;
                 }
@@ -691,7 +691,7 @@ public class SheetsName
                     if(Trade == "FP")
                     {
                         sheetNumber = Trade + "1" + level + "." + areaNum;
-                        sheetName = levelName + "- Area " + areaNum + " - Shop Drawing";
+                        sheetName = levelName + "- AREA " + areaNum + " - SHOP DRAWING";
                         break;
                     }
                     // ex: HP.LXX.Area
@@ -706,7 +706,7 @@ public class SheetsName
                     if(Trade == "FP")
                     {
                         sheetNumber = Trade + "2" + level + "." + areaNum + ".S";
-                        sheetName = levelName + "- Area " + areaNum + " - Slab Penetration";
+                        sheetName = levelName + "- AREA " + areaNum + " - SLAB PENETRATION";
                         break;
                     }
                     // ex: HP.P.LXX.Area.SLV
@@ -729,11 +729,11 @@ public class SheetsName
                     if (Trade == "FP")
                     {
                         sheetNumber = Trade + "2" + level + "." + areaNum + ".W";
-                        sheetName = levelName + "- Area " + areaNum + " - Wall Penetration";
+                        sheetName = levelName + "- AREA " + areaNum + " - WALL PENETRATION";
                         break;
                     }
                     sheetNumber = Trade + $".P.L{level}." + areaNum + ".W";
-                    sheetName = "Wall Penetration - " + levelName + " - AREA " + areaNum;
+                    sheetName = "WALL PENETRATION - " + levelName + " - AREA " + areaNum;
                     break;
                 }
         }
