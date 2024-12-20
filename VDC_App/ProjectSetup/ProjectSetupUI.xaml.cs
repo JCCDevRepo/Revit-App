@@ -335,12 +335,12 @@ namespace VDC_App
                                         createView.LookupParameter("View Category").Set("ANNOTATION");
                                         createView.LookupParameter("View SubCategory").Set(viewTypeI);
 
-                                        // apply overall scope if SB name ends in zero
+                                        // apply overall scope if SB name ends in zero and does not contain 1. skip Instances like 010, 0100 etc
                                         foreach (var e in scopeBoxCol)
                                         {
                                             var regex = Regex.IsMatch(e.Name, @"0+$");
                                             //MessageBox.Show(regex);
-                                            if (regex)
+                                            if (regex & !e.Name.Contains("1"))
                                             {
                                                 createView.get_Parameter(BuiltInParameter.VIEWER_VOLUME_OF_INTEREST_CROP).Set(e.Id);
 
@@ -380,14 +380,17 @@ namespace VDC_App
         private void CreateDependentViews()
         {
             // get all the user selected scopeboxes
-            var scopeBoxCol = new UserSelectedItems(ScopeBoxes).SelectedScopeBoxes();
+            var scopeBoxCol = new UserSelectedItems(ScopeBoxes).SelectedScopeBoxes()
+                .SkipWhile(e => e.Name.EndsWith("0") & !e.Name.Contains("1"))
+                .ToList();
 
             var sheetCol = new FilteredElementCollector(Doc)
                 .OfClass(typeof(View))
                 .Where(e => e.Name.ToLower().Contains("sheet_"))
                 .ToList();
 
-
+            var form = new SimpleForm(scopeBoxCol.Select(e => e.Name));
+            form.ShowDialog();
 
             // this method filters out other views that are not necessary
             var sheetViews = new ViewsFromIds(Doc, sheetCol.Select(e => e.Id).ToList()).GetViews();
@@ -414,8 +417,7 @@ namespace VDC_App
             }
 
 
-            //var form = new SimpleForm(dependV.Select(e => e.Name));
-            //form.ShowDialog();
+
 
             using (Transaction tran = new Transaction(Doc))
             {
